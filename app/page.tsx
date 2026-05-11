@@ -163,7 +163,8 @@ export default function Home() {
         className="text-center text-muted py-6"
         style={{ fontSize: "0.7rem", letterSpacing: "0.06em" }}
       >
-        All processing happens in your browser. Your camera feed never leaves your device.
+        <p>All processing happens in your browser. Your camera feed never leaves your device.</p>
+        <p className="mt-2 text-white/70">Made by Tosin</p>
       </footer>
     </div>
   );
