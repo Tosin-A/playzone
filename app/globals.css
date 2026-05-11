@@ -61,12 +61,12 @@ body {
 }
 
 .hero-line {
-  animation: heroSlide 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: heroSlide 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 .hero-line-1 { animation-delay: 0s; }
 /* hero-line-2 intentionally unused — wordmark uses directional variants */
-.hero-line-3 { animation-delay: 0.28s; }   /* bottom bar: after wordmark */
-.hero-line-4 { animation-delay: 0.38s; }
+.hero-line-3 { animation-delay: 0.36s; }   /* bottom bar: after wordmark */
+.hero-line-4 { animation-delay: 0.5s; }
 
 /* ── Wordmark directional entrances ──────────────────────── */
 /* "PLAY" closes in from the left (hollow text, leading edge)  */
@@ -82,10 +82,10 @@ body {
 }
 
 .hero-play {
-  animation: heroPlayIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both;
+  animation: heroPlayIn 0.95s cubic-bezier(0.16, 1, 0.3, 1) 0.14s both;
 }
 .hero-zone {
-  animation: heroZoneIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+  animation: heroZoneIn 0.95s cubic-bezier(0.16, 1, 0.3, 1) 0.28s both;
 }
 
 /* ── Scroll bounce ───────────────────────────────────────── */
@@ -94,7 +94,7 @@ body {
   50%       { transform: translateY(5px); }
 }
 .nudge-down {
-  animation: nudgeDown 1.6s ease-in-out infinite;
+  animation: nudgeDown 2.2s ease-in-out infinite;
 }
 
 /* ── Live indicator pulse ────────────────────────────────── */
@@ -103,7 +103,7 @@ body {
   50%       { opacity: 0.3; }
 }
 .live-dot {
-  animation: livePulse 1.8s ease-in-out infinite;
+  animation: livePulse 2.5s ease-in-out infinite;
 }
 
 /* ── Camera scan pulse (PermissionGate "requesting" state) ── */
@@ -112,7 +112,7 @@ body {
   50%       { opacity: 0.55; transform: scale(0.92); }
 }
 .camera-scanning {
-  animation: cameraScan 0.95s ease-in-out infinite;
+  animation: cameraScan 1.3s ease-in-out infinite;
 }
 
 /* ── Reduced motion ──────────────────────────────────────── */

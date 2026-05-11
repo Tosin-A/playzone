@@ -221,7 +221,7 @@ function JutsuOverlay({ state, timeLeft }: { state: JutsuState; timeLeft: number
           key={state.totalJutsus}
           initial={{ opacity: 1, y: 0 }}
           animate={{ opacity: 0, y: -20 }}
-          transition={{ duration: 1 }}
+          transition={{ duration: 1.25 }}
           className="absolute bottom-20 left-0 right-0 text-center"
         >
           <span
@@ -256,7 +256,7 @@ function JutsuEffect({ effect }: { effect: ActiveEffect }) {
       initial={{ scale: 0.3, opacity: 1 }}
       animate={{ scale: 2.5, opacity: 0 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 1.2, ease: "easeOut" }}
+      transition={{ duration: 1.5, ease: "easeOut" }}
       className="absolute w-24 h-24 -ml-12 -mt-12 rounded-full"
       style={{
         left: `${effect.x * 100}%`,

@@ -51,7 +51,7 @@ export default function PermissionGate({ children }: PermissionGateProps) {
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       className="flex flex-col items-center justify-center gap-6 p-8 text-center min-h-[60vh]"
     >
       {/* Camera icon — pulses during "requesting" state to show
@@ -79,7 +79,7 @@ export default function PermissionGate({ children }: PermissionGateProps) {
           <p className="text-red-400 max-w-sm">{error}</p>
           <button
             onClick={requestCamera}
-            className="px-6 py-3 bg-white/10 rounded-2xl text-foreground font-medium hover:bg-white/15 active:scale-[0.97] transition-all duration-150"
+            className="px-6 py-3 bg-white/10 rounded-2xl text-foreground font-medium hover:bg-white/15 active:scale-[0.97] transition-all duration-300"
           >
             Try Again
           </button>
@@ -96,7 +96,7 @@ export default function PermissionGate({ children }: PermissionGateProps) {
           <button
             onClick={requestCamera}
             disabled={state === "requesting"}
-            className="px-6 py-3 bg-accent text-black font-semibold rounded-2xl hover:bg-accent-dim active:scale-[0.97] transition-all duration-150 disabled:opacity-50"
+            className="px-6 py-3 bg-accent text-black font-semibold rounded-2xl hover:bg-accent-dim active:scale-[0.97] transition-all duration-300 disabled:opacity-50"
           >
             {state === "requesting" ? "Requesting..." : "Enable Camera"}
           </button>

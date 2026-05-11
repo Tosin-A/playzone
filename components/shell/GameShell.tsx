@@ -30,7 +30,7 @@ export default function GameShell({
       <header className="flex items-center justify-between px-4 py-3 shrink-0">
         <Link
           href="/"
-          className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/5 active:scale-[0.93] transition-all duration-150"
+          className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/5 active:scale-[0.93] transition-all duration-300"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -70,7 +70,7 @@ export default function GameShell({
           {onShare && (
             <button
               onClick={onShare}
-              className="px-5 py-2.5 bg-accent text-black font-semibold rounded-2xl hover:bg-accent-dim active:scale-[0.97] transition-all duration-150"
+              className="px-5 py-2.5 bg-accent text-black font-semibold rounded-2xl hover:bg-accent-dim active:scale-[0.97] transition-all duration-300"
             >
               Share
             </button>
@@ -78,7 +78,7 @@ export default function GameShell({
           {onPlayAgain && (
             <button
               onClick={onPlayAgain}
-              className="px-5 py-2.5 bg-white/10 rounded-2xl font-medium hover:bg-white/15 active:scale-[0.97] transition-all duration-150"
+              className="px-5 py-2.5 bg-white/10 rounded-2xl font-medium hover:bg-white/15 active:scale-[0.97] transition-all duration-300"
             >
               Play Again
             </button>
@@ -93,7 +93,7 @@ function InfoButton({ howToPlay }: { howToPlay: string }) {
   return (
     <button
       onClick={() => alert(howToPlay)}
-      className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/5 active:scale-[0.93] transition-all duration-150"
+      className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/5 active:scale-[0.93] transition-all duration-300"
       aria-label="How to play"
     >
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

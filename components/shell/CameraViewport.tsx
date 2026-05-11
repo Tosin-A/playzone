@@ -124,7 +124,7 @@ export default function CameraViewport({
   const showCanvas = privacyMode !== "normal";
 
   return (
-    <div className="relative w-full aspect-[9/16] md:aspect-video max-h-[70vh] rounded-3xl overflow-hidden bg-black">
+    <div className="relative w-full max-w-[1200px] aspect-[3/4] sm:aspect-[4/5] md:aspect-video max-h-[80vh] rounded-3xl overflow-hidden bg-black">
       <video
         ref={videoRef}
         autoPlay

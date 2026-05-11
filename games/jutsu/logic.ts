@@ -78,14 +78,12 @@ export interface JutsuState {
 }
 
 export interface ActiveEffect {
-  id: number;
+  id: string;
   type: JutsuType;
   x: number;
   y: number;
   startTime: number;
 }
-
-let effectId = 0;
 
 export function createInitialState(): JutsuState {
   return {
@@ -208,9 +206,12 @@ export function processFrame(
     newState.totalJutsus = state.totalJutsus + 1;
     newState.jutsuCounts = { ...state.jutsuCounts, [detected]: state.jutsuCounts[detected] + 1 };
     newState.cooldownUntil = now + 600; // 600ms cooldown between moves
+    // Use a timestamp+random composite ID so keys stay unique even across
+    // Fast Refresh/HMR where module-level counters can reset.
+    const effectId = `${detected}-${now}-${Math.random().toString(36).slice(2, 8)}`;
     newState.activeEffects = [
       ...newState.activeEffects,
-      { id: effectId++, type: detected, x: effectX, y: effectY, startTime: now },
+      { id: effectId, type: detected, x: effectX, y: effectY, startTime: now },
     ];
   }
 

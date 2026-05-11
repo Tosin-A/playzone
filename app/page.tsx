@@ -1,4 +1,5 @@
 import GameGrid from "@/components/landing/GameGrid";
+import ReactBitsAmbient from "@/components/landing/ReactBitsAmbient";
 
 export default function Home() {
   return (
@@ -22,6 +23,8 @@ export default function Home() {
             "overflow-hidden",
           ].join(" ")}
         >
+          <ReactBitsAmbient className="z-[1]" />
+
           {/* Dot grid texture */}
           <div className="hero-grid absolute inset-0 pointer-events-none" />
 
@@ -103,7 +106,7 @@ export default function Home() {
 
             <a
               href="#games"
-              className="inline-flex items-center gap-2 text-accent/60 hover:text-accent transition-colors md:hidden"
+              className="inline-flex items-center gap-2 text-accent/60 hover:text-accent transition-colors duration-300 md:hidden"
               style={{
                 fontFamily: "var(--font-barlow), sans-serif",
                 fontSize: "0.72rem",

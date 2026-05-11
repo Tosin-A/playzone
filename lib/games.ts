@@ -4,6 +4,15 @@ export interface GameMeta {
   description: string;
   gradient: string;
   available: boolean;
+  previewFrames: [string, string, string];
+  immersive: {
+    subtitle: string;
+    setting: string;
+    mission: string;
+    signatureMove: string;
+    aura: string;
+    kanji: string;
+  };
 }
 
 export const GAMES: GameMeta[] = [
@@ -14,6 +23,15 @@ export const GAMES: GameMeta[] = [
     // Warm rose→amber: confidence, attraction, "golden hour" energy
     gradient: "from-rose-400 via-orange-400 to-amber-300",
     available: true,
+    previewFrames: ["Flirt combo", "Face lock", "Aura check"],
+    immersive: {
+      subtitle: "The Charisma Trial",
+      setting: "Neon rooftop after rain, Tokyo midnight",
+      mission: "Hold eye contact and land clean expressions before the timer drops.",
+      signatureMove: "Golden Wink Finisher",
+      aura: "oklch(0.80 0.20 35)",
+      kanji: "魅",
+    },
   },
   {
     slug: "six-seven",
@@ -22,6 +40,15 @@ export const GAMES: GameMeta[] = [
     // Hot orange→red: urgency, speed, competition
     gradient: "from-orange-400 to-red-600",
     available: true,
+    previewFrames: ["Left up", "Right up", "Speed burst"],
+    immersive: {
+      subtitle: "Tempo Discipline Arc",
+      setting: "Training hall lit by ember lanterns",
+      mission: "Alternate hand raises without breaking rhythm for 30 seconds.",
+      signatureMove: "Metronome Barrage",
+      aura: "oklch(0.78 0.19 45)",
+      kanji: "拍",
+    },
   },
   {
     slug: "shadow-boxing",
@@ -30,6 +57,15 @@ export const GAMES: GameMeta[] = [
     // Deep red→rose: fighting game energy, intensity
     gradient: "from-red-500 to-rose-800",
     available: true,
+    previewFrames: ["Guard stance", "Punch chain", "Hit confirm"],
+    immersive: {
+      subtitle: "Street Duel Protocol",
+      setting: "Underground ring with cracked LED boards",
+      mission: "Out-punch your rival and keep your combo meter alive.",
+      signatureMove: "Crimson Counter Rush",
+      aura: "oklch(0.67 0.23 24)",
+      kanji: "拳",
+    },
   },
   {
     slug: "pose-off",
@@ -38,6 +74,15 @@ export const GAMES: GameMeta[] = [
     // Vivid violet→deep indigo: stylish, dancer energy
     gradient: "from-violet-400 to-indigo-700",
     available: true,
+    previewFrames: ["Pose lock", "Mirror read", "Time attack"],
+    immersive: {
+      subtitle: "Pose Memory Saga",
+      setting: "Holographic stage with floating cue cards",
+      mission: "Copy every shape before the reference ghost disappears.",
+      signatureMove: "Perfect Silhouette Snap",
+      aura: "oklch(0.68 0.21 295)",
+      kanji: "型",
+    },
   },
   {
     slug: "dont-smile",
@@ -46,6 +91,15 @@ export const GAMES: GameMeta[] = [
     // Bright yellow→orange: comedy, mischief, sunshine energy
     gradient: "from-yellow-300 to-orange-500",
     available: true,
+    previewFrames: ["Laugh bait", "Blink test", "Composure"],
+    immersive: {
+      subtitle: "Poker Face Gauntlet",
+      setting: "Comedy club meets chaos carnival",
+      mission: "Stay stone-faced while absurd attacks try to break your focus.",
+      signatureMove: "Deadpan Shield",
+      aura: "oklch(0.84 0.22 80)",
+      kanji: "忍",
+    },
   },
   {
     slug: "jutsu",
@@ -54,6 +108,15 @@ export const GAMES: GameMeta[] = [
     // Electric blue→dark violet: chakra energy, ninja
     gradient: "from-blue-400 to-violet-900",
     available: true,
+    previewFrames: ["Seal prep", "Body glyph", "Chakra sync"],
+    immersive: {
+      subtitle: "Forbidden Hand-Sign Exam",
+      setting: "Moonlit dojo with moving ink sigils",
+      mission: "Chain body signs in order to summon full-technique effects.",
+      signatureMove: "Nine-Seal Cyclone",
+      aura: "oklch(0.66 0.22 275)",
+      kanji: "術",
+    },
   },
   {
     slug: "mirror",
@@ -62,6 +125,15 @@ export const GAMES: GameMeta[] = [
     // Fuchsia→purple: mirror/symmetry, pop energy
     gradient: "from-fuchsia-400 to-purple-700",
     available: true,
+    previewFrames: ["Dual lock", "Symmetry", "Sync bonus"],
+    immersive: {
+      subtitle: "Twin Soul Sync",
+      setting: "Crystal mirror chamber with split horizons",
+      mission: "Read your partner instantly and match every pose for multipliers.",
+      signatureMove: "Parallel Echo Burst",
+      aura: "oklch(0.70 0.25 330)",
+      kanji: "鏡",
+    },
   },
   {
     slug: "freeze",
@@ -70,6 +142,15 @@ export const GAMES: GameMeta[] = [
     // Icy cyan→deep blue: cold, stillness, frozen
     gradient: "from-cyan-300 to-blue-800",
     available: false,
+    previewFrames: ["Freeze cue", "Motion trap", "Stillness"],
+    immersive: {
+      subtitle: "Cold Frame Chronicle",
+      setting: "Icy metro tunnel with strobe alarms",
+      mission: "Become absolutely still when the freeze siren snaps on.",
+      signatureMove: "Zero-Motion Domain",
+      aura: "oklch(0.74 0.15 230)",
+      kanji: "凍",
+    },
   },
   {
     slug: "air-drums",
@@ -78,6 +159,15 @@ export const GAMES: GameMeta[] = [
     // Amber→deep red: warm percussion, stage lights
     gradient: "from-amber-400 to-red-700",
     available: false,
+    previewFrames: ["Snare swing", "Kick hit", "Crowd meter"],
+    immersive: {
+      subtitle: "Rhythm Riot Arc",
+      setting: "Packed live stage with molten spotlights",
+      mission: "Air-drum clean patterns and ignite the crowd heat bar.",
+      signatureMove: "Thunder Fill Break",
+      aura: "oklch(0.72 0.20 38)",
+      kanji: "鼓",
+    },
   },
   {
     slug: "stare-off",
@@ -86,6 +176,15 @@ export const GAMES: GameMeta[] = [
     // Dark slate→violet: intense, hypnotic, uncomfortable
     gradient: "from-slate-600 to-violet-900",
     available: true,
+    previewFrames: ["Eye lock", "Blink bait", "Nerve test"],
+    immersive: {
+      subtitle: "Unbroken Gaze Pact",
+      setting: "Silent alley under one violet sign",
+      mission: "Hold eye contact longer than your opponent without flinching.",
+      signatureMove: "Void Stare Crush",
+      aura: "oklch(0.63 0.16 285)",
+      kanji: "眼",
+    },
   },
   {
     slug: "posture",
@@ -94,6 +193,15 @@ export const GAMES: GameMeta[] = [
     // Emerald→teal: health, authority, crisp
     gradient: "from-emerald-400 to-teal-700",
     available: false,
+    previewFrames: ["Spine check", "Slouch alarm", "Reset"],
+    immersive: {
+      subtitle: "Form Guardian Program",
+      setting: "Cyber clinic with strict AI instructors",
+      mission: "Maintain perfect posture and survive the roast detector.",
+      signatureMove: "Iron Spine Lock",
+      aura: "oklch(0.74 0.16 170)",
+      kanji: "勢",
+    },
   },
   {
     slug: "subway-run",
@@ -101,6 +209,15 @@ export const GAMES: GameMeta[] = [
     description: "Endless runner controlled by your body",
     // Lime→green: speed, city, go
     gradient: "from-lime-300 to-emerald-600",
-    available: true,
+    available: false,
+    previewFrames: ["Jump lane", "Duck lane", "Dash chain"],
+    immersive: {
+      subtitle: "Metro Velocity Run",
+      setting: "Endless neon rails above sleeping districts",
+      mission: "Use your body to dodge hazards and keep speed maxed.",
+      signatureMove: "Phantom Rail Sprint",
+      aura: "oklch(0.76 0.19 145)",
+      kanji: "走",
+    },
   },
 ];

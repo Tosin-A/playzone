@@ -201,7 +201,7 @@ function StareOverlay({ state }: { state: StareOffState }) {
             <motion.div
               className="h-full rounded-full bg-accent"
               animate={{ width: `${state.eyeOpenness * 100}%` }}
-              transition={{ duration: 0.05 }}
+              transition={{ duration: 0.062 }}
             />
           </div>
         </div>
@@ -211,7 +211,7 @@ function StareOverlay({ state }: { state: StareOffState }) {
       <div className="self-center flex flex-col items-center gap-3">
         <motion.div
           animate={{ scale }}
-          transition={{ duration: 2, ease: "easeOut" }}
+          transition={{ duration: 2.5, ease: "easeOut" }}
           className="text-6xl"
         >
           {character.emoji}
@@ -237,7 +237,7 @@ function StareOverlay({ state }: { state: StareOffState }) {
       {state.intensity > 0.7 && (
         <motion.div
           animate={{ opacity: [0, 0.1, 0] }}
-          transition={{ repeat: Infinity, duration: 1.5 }}
+          transition={{ repeat: Infinity, duration: 1.875 }}
           className="absolute inset-0 bg-red-500 pointer-events-none"
         />
       )}

@@ -43,7 +43,7 @@ export default function RizzOverlay({ phase, progress, score, oneLiner, liveScor
                   strokeWidth="3"
                   strokeLinecap="round"
                   strokeDasharray={`${progress * 2.83} 283`}
-                  className="transition-all duration-200"
+                  className="transition-all duration-300"
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
@@ -68,7 +68,7 @@ export default function RizzOverlay({ phase, progress, score, oneLiner, liveScor
             key="result"
             initial={{ opacity: 0, scale: 0.7 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col items-center gap-3 bg-black/70 backdrop-blur-md rounded-3xl p-8"
           >
             <span className="text-5xl font-bold font-[family-name:var(--font-display)] text-accent">
@@ -104,7 +104,7 @@ function ScoreBar({ label, value, color }: { label: string; value: number; color
           className="h-full rounded-full"
           style={{ backgroundColor: color }}
           animate={{ width: `${value}%` }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
+          transition={{ duration: 0.375, ease: "easeOut" }}
         />
       </div>
     </div>

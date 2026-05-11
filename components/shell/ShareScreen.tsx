@@ -85,7 +85,7 @@ export default function ShareScreen({
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       className="flex flex-col items-center gap-6 p-6 text-center"
     >
       {/* ── Score reveal ──────────────────────────────────────
@@ -96,7 +96,7 @@ export default function ShareScreen({
         initial={{ opacity: 0, scale: 0.6 }}
         animate={{ opacity: [0, 1, 1], scale: [0.6, 1.06, 1] }}
         transition={{
-          duration: 0.55,
+          duration: 0.688,
           times: [0, 0.65, 1],
           ease: [[0.16, 1, 0.3, 1], "easeIn"],
         }}
@@ -110,7 +110,7 @@ export default function ShareScreen({
         <motion.p
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.5, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
           className="text-lg text-white/70"
         >
           {subtitle}
@@ -121,13 +121,13 @@ export default function ShareScreen({
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, delay: 0.65, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.438, delay: 0.65, ease: [0.16, 1, 0.3, 1] }}
         className="flex flex-wrap justify-center gap-3"
       >
         {typeof navigator !== "undefined" && "share" in navigator && (
           <button
             onClick={handleShare}
-            className="px-5 py-2.5 bg-accent text-black font-semibold rounded-2xl hover:bg-accent-dim active:scale-[0.97] transition-all duration-150"
+            className="px-5 py-2.5 bg-accent text-black font-semibold rounded-2xl hover:bg-accent-dim active:scale-[0.97] transition-all duration-300"
           >
             Share
           </button>
@@ -135,7 +135,7 @@ export default function ShareScreen({
         {shareImage && (
           <button
             onClick={handleDownload}
-            className="px-5 py-2.5 bg-white/10 rounded-2xl font-medium hover:bg-white/15 active:scale-[0.97] transition-all duration-150"
+            className="px-5 py-2.5 bg-white/10 rounded-2xl font-medium hover:bg-white/15 active:scale-[0.97] transition-all duration-300"
           >
             Download
           </button>
@@ -146,18 +146,18 @@ export default function ShareScreen({
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, delay: 0.75, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.438, delay: 0.75, ease: [0.16, 1, 0.3, 1] }}
         className="flex gap-3"
       >
         <button
           onClick={onPlayAgain}
-          className="px-5 py-2.5 bg-white/10 rounded-2xl font-medium hover:bg-white/15 active:scale-[0.97] transition-all duration-150"
+          className="px-5 py-2.5 bg-white/10 rounded-2xl font-medium hover:bg-white/15 active:scale-[0.97] transition-all duration-300"
         >
           Play Again
         </button>
         <Link
           href="/"
-          className="px-5 py-2.5 bg-white/5 rounded-2xl font-medium hover:bg-white/10 active:scale-[0.97] transition-all duration-150"
+          className="px-5 py-2.5 bg-white/5 rounded-2xl font-medium hover:bg-white/10 active:scale-[0.97] transition-all duration-300"
         >
           Try Another
         </Link>

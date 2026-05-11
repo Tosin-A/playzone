@@ -228,7 +228,7 @@ function PoseOffOverlay({
                 backgroundColor: matchProgress >= 100 ? "#00ff88" : matchProgress > 50 ? "#ffcc00" : "#ff4444",
               }}
               animate={{ width: `${matchProgress}%` }}
-              transition={{ duration: 0.15 }}
+              transition={{ duration: 0.188 }}
             />
           </div>
           <p className="text-xs text-white/40 mt-2">{matchProgress}% matched</p>

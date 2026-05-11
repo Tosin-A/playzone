@@ -282,7 +282,7 @@ function MatchOverlay({ timeLeft, matchProgress, round, totalRounds }: { timeLef
           <motion.div
             className="h-full rounded-full bg-accent"
             animate={{ width: `${matchProgress}%` }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.25 }}
           />
         </div>
       </div>

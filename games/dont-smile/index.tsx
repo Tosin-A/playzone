@@ -254,7 +254,7 @@ function DontSmileOverlay({
               className="h-full rounded-full"
               style={{ backgroundColor: dangerColor }}
               animate={{ width: `${Math.min(100, smileIntensity * 285)}%` }}
-              transition={{ duration: 0.1 }}
+              transition={{ duration: 0.125 }}
             />
           </div>
           <span className="text-xs text-white/50">😁</span>
