@@ -10,6 +10,8 @@ import PrivacySettings from "@/components/shell/PrivacySettings";
 import { generateShareCard } from "@/lib/recording/shareCard";
 import { useCamera } from "@/lib/CameraProvider";
 import { motion, AnimatePresence } from "framer-motion";
+import OnlineGameWrapper from "@/components/shell/OnlineGameWrapper";
+import JutsuOnline from "./online";
 
 type GamePhase = "ready" | "countdown" | "playing" | "result";
 const GAME_DURATION = 30000; // 30 seconds
@@ -33,7 +35,21 @@ export default function JutsuGame() {
 
   return (
     <GameShell title="Jutsu" howToPlay="Perform jutsus: push forward (Rasengan), thrust down (Chidori), hands from face outward (Fireball), cross arms (Shadow Clone), slam hand low (Summoning). Chain different jutsus for combo multipliers!">
-      <JutsuInner stream={stream} />
+      <OnlineGameWrapper
+        gameSlug="jutsu"
+        gameName="Jutsu"
+        unit=" pts"
+        renderSoloGame={() => <JutsuInner stream={stream} />}
+      >
+        {(props) => (
+          <JutsuOnline
+            manager={props.manager}
+            opponentScore={props.opponentScore}
+            onScoreUpdate={props.onScoreUpdate}
+            onGameFinished={props.onGameFinished}
+          />
+        )}
+      </OnlineGameWrapper>
     </GameShell>
   );
 }

@@ -10,6 +10,8 @@ import PrivacySettings from "@/components/shell/PrivacySettings";
 import { generateShareCard } from "@/lib/recording/shareCard";
 import { useCamera } from "@/lib/CameraProvider";
 import { motion, AnimatePresence } from "framer-motion";
+import OnlineGameWrapper from "@/components/shell/OnlineGameWrapper";
+import PoseOffOnline from "./online";
 
 type GamePhase = "ready" | "countdown" | "playing" | "result";
 
@@ -32,7 +34,22 @@ export default function PoseOffGame() {
 
   return (
     <GameShell title="Pose-Off" howToPlay="Match the poses shown on screen as fast as possible. Complete all 6 poses in the fastest time to win!">
-      <PoseOffInner stream={stream} />
+      <OnlineGameWrapper
+        gameSlug="pose-off"
+        gameName="Pose-Off"
+        unit="s"
+        lowerIsBetter
+        renderSoloGame={() => <PoseOffInner stream={stream} />}
+      >
+        {(props) => (
+          <PoseOffOnline
+            manager={props.manager}
+            opponentScore={props.opponentScore}
+            onScoreUpdate={props.onScoreUpdate}
+            onGameFinished={props.onGameFinished}
+          />
+        )}
+      </OnlineGameWrapper>
     </GameShell>
   );
 }

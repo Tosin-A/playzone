@@ -10,6 +10,8 @@ import PrivacySettings from "@/components/shell/PrivacySettings";
 import { generateShareCard } from "@/lib/recording/shareCard";
 import { useCamera } from "@/lib/CameraProvider";
 import { motion } from "framer-motion";
+import OnlineGameWrapper from "@/components/shell/OnlineGameWrapper";
+import MirrorOnline from "./online";
 
 type GamePhase = "ready" | "p1-pose" | "p1-countdown" | "p2-match" | "round-result" | "final-result";
 const MATCH_DURATION = 3000; // 3 seconds to match
@@ -33,7 +35,21 @@ export default function MirrorGame() {
 
   return (
     <GameShell title="Mirror Match" howToPlay="Player 1: strike a pose and hold it. Player 2: you have 3 seconds to copy the pose as closely as possible. 5 rounds, highest total score wins!">
-      <MirrorInner stream={stream} />
+      <OnlineGameWrapper
+        gameSlug="mirror"
+        gameName="Mirror Match"
+        unit="%"
+        renderSoloGame={() => <MirrorInner stream={stream} />}
+      >
+        {(props) => (
+          <MirrorOnline
+            manager={props.manager}
+            opponentScore={props.opponentScore}
+            onScoreUpdate={props.onScoreUpdate}
+            onGameFinished={props.onGameFinished}
+          />
+        )}
+      </OnlineGameWrapper>
     </GameShell>
   );
 }

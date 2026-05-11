@@ -10,6 +10,8 @@ import PrivacySettings from "@/components/shell/PrivacySettings";
 import { generateShareCard } from "@/lib/recording/shareCard";
 import { useCamera } from "@/lib/CameraProvider";
 import { motion } from "framer-motion";
+import OnlineGameWrapper from "@/components/shell/OnlineGameWrapper";
+import ShadowBoxingOnline from "./online";
 
 type GamePhase = "ready" | "countdown" | "playing" | "result";
 const GAME_DURATION = 45000; // 45 seconds
@@ -33,7 +35,21 @@ export default function ShadowBoxingGame() {
 
   return (
     <GameShell title="Shadow Boxing" howToPlay="Two players face the camera. Throw punches to score, alternate hands for combos. Dodge by moving your head. 45 seconds — most punches wins!">
-      <ShadowBoxingInner stream={stream} />
+      <OnlineGameWrapper
+        gameSlug="shadow-boxing"
+        gameName="Shadow Boxing"
+        unit=" punches"
+        renderSoloGame={() => <ShadowBoxingInner stream={stream} />}
+      >
+        {(props) => (
+          <ShadowBoxingOnline
+            manager={props.manager}
+            opponentScore={props.opponentScore}
+            onScoreUpdate={props.onScoreUpdate}
+            onGameFinished={props.onGameFinished}
+          />
+        )}
+      </OnlineGameWrapper>
     </GameShell>
   );
 }

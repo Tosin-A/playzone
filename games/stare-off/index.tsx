@@ -10,6 +10,8 @@ import PrivacySettings from "@/components/shell/PrivacySettings";
 import { generateShareCard } from "@/lib/recording/shareCard";
 import { useCamera } from "@/lib/CameraProvider";
 import { motion, AnimatePresence } from "framer-motion";
+import OnlineGameWrapper from "@/components/shell/OnlineGameWrapper";
+import StareOffOnline from "./online";
 
 type GamePhase = "select" | "countdown" | "playing" | "result";
 
@@ -32,7 +34,21 @@ export default function StareOffGame() {
 
   return (
     <GameShell title="Stare Off" howToPlay="Stare at the character without blinking or looking away. They'll try to psych you out. How long can you last?">
-      <StareOffInner stream={stream} />
+      <OnlineGameWrapper
+        gameSlug="stare-off"
+        gameName="Stare Off"
+        unit="s"
+        renderSoloGame={() => <StareOffInner stream={stream} />}
+      >
+        {(props) => (
+          <StareOffOnline
+            manager={props.manager}
+            opponentScore={props.opponentScore}
+            onScoreUpdate={props.onScoreUpdate}
+            onGameFinished={props.onGameFinished}
+          />
+        )}
+      </OnlineGameWrapper>
     </GameShell>
   );
 }
