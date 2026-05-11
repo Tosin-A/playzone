@@ -1,5 +1,6 @@
 import GameGrid from "@/components/landing/GameGrid";
 import ReactBitsAmbient from "@/components/landing/ReactBitsAmbient";
+import LeaderboardPanel from "@/components/leaderboard/LeaderboardPanel";
 
 export default function Home() {
   return (
@@ -155,6 +156,7 @@ export default function Home() {
           </div>
 
           <GameGrid />
+          <LeaderboardPanel />
         </main>
       </div>
 

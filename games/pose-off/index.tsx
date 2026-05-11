@@ -6,7 +6,6 @@ import { createInitialState, checkPoseMatch, getCurrentTargetPose, PoseOffState 
 import GameShell from "@/components/shell/GameShell";
 import CameraViewport from "@/components/shell/CameraViewport";
 import ShareScreen from "@/components/shell/ShareScreen";
-import PrivacySettings from "@/components/shell/PrivacySettings";
 import { generateShareCard } from "@/lib/recording/shareCard";
 import { useCamera } from "@/lib/CameraProvider";
 import { motion, AnimatePresence } from "framer-motion";
@@ -110,7 +109,7 @@ function PoseOffInner({ stream }: { stream: MediaStream }) {
           title: "Pose-Off",
           score: `${totalSec}s`,
           subtitle: `${newState.posesCompleted} poses matched`,
-          gameUrl: "playzone.app/play/pose-off",
+          gameUrl: "https://playzone-omega.vercel.app/play/pose-off",
         }).then(setShareImage);
         return;
       }
@@ -140,9 +139,11 @@ function PoseOffInner({ stream }: { stream: MediaStream }) {
     return (
       <ShareScreen
         score={`${totalSec}s`}
+        numericScore={state.totalTime / 1000}
+        higherIsBetter={false}
         subtitle={`${state.posesCompleted} poses in ${totalSec} seconds`}
         shareImage={shareImage}
-        gameUrl="https://playzone.app/play/pose-off"
+        gameUrl="https://playzone-omega.vercel.app/play/pose-off"
         onPlayAgain={reset}
       />
     );
@@ -189,7 +190,6 @@ function PoseOffInner({ stream }: { stream: MediaStream }) {
           >
             {modelLoading ? "Loading..." : "Start Pose-Off"}
           </button>
-          <PrivacySettings />
         </div>
       )}
     </>

@@ -9,7 +9,7 @@ import {
   ReactNode,
 } from "react";
 
-export type PrivacyMode = "normal" | "silhouette" | "skeleton" | "blur";
+export type PrivacyMode = "normal" | "silhouette";
 
 interface CameraContextValue {
   stream: MediaStream | null;
@@ -34,9 +34,7 @@ export function CameraProvider({ children }: { children: ReactNode }) {
   const [privacyMode, setPrivacyMode] = useState<PrivacyMode>(() => {
     if (typeof window === "undefined") return "normal";
     const saved = localStorage.getItem("playzone-privacy");
-    return saved && ["normal", "silhouette", "skeleton", "blur"].includes(saved)
-      ? (saved as PrivacyMode)
-      : "normal";
+    return saved === "silhouette" ? "silhouette" : "normal";
   });
 
   useEffect(() => {

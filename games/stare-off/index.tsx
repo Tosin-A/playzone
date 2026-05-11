@@ -6,7 +6,6 @@ import { createInitialState, processFrame, StareOffState, CHARACTERS } from "./l
 import GameShell from "@/components/shell/GameShell";
 import CameraViewport from "@/components/shell/CameraViewport";
 import ShareScreen from "@/components/shell/ShareScreen";
-import PrivacySettings from "@/components/shell/PrivacySettings";
 import { generateShareCard } from "@/lib/recording/shareCard";
 import { useCamera } from "@/lib/CameraProvider";
 import { motion, AnimatePresence } from "framer-motion";
@@ -111,7 +110,7 @@ function StareOffInner({ stream }: { stream: MediaStream }) {
           title: "Stare Off",
           score: `${seconds}s`,
           subtitle,
-          gameUrl: "playzone.app/play/stare-off",
+          gameUrl: "https://playzone-omega.vercel.app/play/stare-off",
         }).then(setShareImage);
         return;
       }
@@ -141,9 +140,10 @@ function StareOffInner({ stream }: { stream: MediaStream }) {
     return (
       <ShareScreen
         score={`${seconds}s`}
+        numericScore={state.survivalTime / 1000}
         subtitle={subtitle}
         shareImage={shareImage}
-        gameUrl="https://playzone.app/play/stare-off"
+        gameUrl="https://playzone-omega.vercel.app/play/stare-off"
         onPlayAgain={reset}
       />
     );
@@ -191,7 +191,6 @@ function StareOffInner({ stream }: { stream: MediaStream }) {
             ))}
           </div>
           {modelLoading && <p className="text-xs text-white/40">Loading model...</p>}
-          <PrivacySettings />
         </div>
       )}
     </>

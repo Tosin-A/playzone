@@ -4,7 +4,6 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { getPoseLandmarker } from "@/lib/cv/poseLandmarker";
 import { createInitialState, checkPoseMatch, getCurrentTargetPose, PoseOffState } from "./logic";
 import CameraViewport from "@/components/shell/CameraViewport";
-import PrivacySettings from "@/components/shell/PrivacySettings";
 import { useCamera } from "@/lib/CameraProvider";
 import { motion, AnimatePresence } from "framer-motion";
 import type { MultiplayerManager } from "@/lib/multiplayer";
@@ -112,7 +111,6 @@ export default function PoseOffOnline({ opponentScore, onScoreUpdate, onGameFini
           ) : undefined
         }
       />
-      <PrivacySettings />
     </>
   );
 }

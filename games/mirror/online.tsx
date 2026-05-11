@@ -4,7 +4,6 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { getPoseLandmarker } from "@/lib/cv/poseLandmarker";
 import { extractNormalizedPose, comparePoses, TARGET_POSES_ONLINE } from "./logic-online";
 import CameraViewport from "@/components/shell/CameraViewport";
-import PrivacySettings from "@/components/shell/PrivacySettings";
 import { useCamera } from "@/lib/CameraProvider";
 import { motion, AnimatePresence } from "framer-motion";
 import type { MultiplayerManager } from "@/lib/multiplayer";
@@ -135,7 +134,6 @@ export default function MirrorOnline({ opponentScore, onScoreUpdate, onGameFinis
           ) : undefined
         }
       />
-      <PrivacySettings />
     </>
   );
 }

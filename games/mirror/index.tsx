@@ -6,7 +6,6 @@ import { createInitialState, extractNormalizedPose, comparePoses, MirrorState, N
 import GameShell from "@/components/shell/GameShell";
 import CameraViewport from "@/components/shell/CameraViewport";
 import ShareScreen from "@/components/shell/ShareScreen";
-import PrivacySettings from "@/components/shell/PrivacySettings";
 import { generateShareCard } from "@/lib/recording/shareCard";
 import { useCamera } from "@/lib/CameraProvider";
 import { motion } from "framer-motion";
@@ -162,7 +161,7 @@ function MirrorInner({ stream }: { stream: MediaStream }) {
         title: "Mirror Match",
         score: totalScore,
         subtitle: `${avg}/100 avg across ${stateRef.current.totalRounds} rounds`,
-        gameUrl: "playzone.app/play/mirror",
+        gameUrl: "https://playzone-omega.vercel.app/play/mirror",
       }).then(setShareImage);
     } else {
       setPhase("p1-pose");
@@ -194,7 +193,7 @@ function MirrorInner({ stream }: { stream: MediaStream }) {
         score={state.score}
         subtitle={`${avg}/100 average similarity`}
         shareImage={shareImage}
-        gameUrl="https://playzone.app/play/mirror"
+        gameUrl="https://playzone-omega.vercel.app/play/mirror"
         onPlayAgain={reset}
       />
     );
@@ -246,7 +245,6 @@ function MirrorInner({ stream }: { stream: MediaStream }) {
           >
             {modelLoading ? "Loading..." : "Start Match"}
           </button>
-          <PrivacySettings />
         </div>
       )}
 

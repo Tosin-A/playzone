@@ -8,7 +8,6 @@ import RizzOverlay from "./overlay";
 import GameShell from "@/components/shell/GameShell";
 import CameraViewport from "@/components/shell/CameraViewport";
 import ShareScreen from "@/components/shell/ShareScreen";
-import PrivacySettings from "@/components/shell/PrivacySettings";
 import { generateShareCard } from "@/lib/recording/shareCard";
 import { useCamera } from "@/lib/CameraProvider";
 
@@ -100,7 +99,7 @@ function RizzGameInner({ stream }: { stream: MediaStream }) {
           title: "Rizz Rater",
           score: score.total,
           subtitle: score.oneLiner,
-          gameUrl: "playzone.app/play/rizz",
+          gameUrl: "https://playzone-omega.vercel.app/play/rizz",
         }).then(setShareImage);
         return;
       }
@@ -139,7 +138,7 @@ function RizzGameInner({ stream }: { stream: MediaStream }) {
         score={result.total}
         subtitle={result.oneLiner}
         shareImage={shareImage}
-        gameUrl="https://playzone.app/play/rizz"
+        gameUrl="https://playzone-omega.vercel.app/play/rizz"
         onPlayAgain={reset}
       />
     );
@@ -166,7 +165,6 @@ function RizzGameInner({ stream }: { stream: MediaStream }) {
           >
             {modelLoading ? "Loading model..." : "Rate My Rizz"}
           </button>
-          <PrivacySettings />
         </div>
       )}
     </>

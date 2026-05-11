@@ -4,7 +4,6 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { getFaceLandmarker } from "@/lib/cv/faceLandmarker";
 import { createInitialState, processFrame, StareOffState, CHARACTERS } from "./logic";
 import CameraViewport from "@/components/shell/CameraViewport";
-import PrivacySettings from "@/components/shell/PrivacySettings";
 import { useCamera } from "@/lib/CameraProvider";
 import { motion, AnimatePresence } from "framer-motion";
 import type { MultiplayerManager } from "@/lib/multiplayer";
@@ -112,7 +111,6 @@ export default function StareOffOnline({ opponentScore, onScoreUpdate, onGameFin
           </div>
         }
       />
-      <PrivacySettings />
     </>
   );
 }

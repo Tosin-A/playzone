@@ -6,7 +6,6 @@ import { createInitialState, processFrame, JutsuState, JUTSUS, ActiveEffect } fr
 import GameShell from "@/components/shell/GameShell";
 import CameraViewport from "@/components/shell/CameraViewport";
 import ShareScreen from "@/components/shell/ShareScreen";
-import PrivacySettings from "@/components/shell/PrivacySettings";
 import { generateShareCard } from "@/lib/recording/shareCard";
 import { useCamera } from "@/lib/CameraProvider";
 import { motion, AnimatePresence } from "framer-motion";
@@ -109,7 +108,7 @@ function JutsuInner({ stream }: { stream: MediaStream }) {
           title: "Jutsu Master",
           score: s.score,
           subtitle: `${s.totalJutsus} jutsus • Best combo: ${s.bestCombo}x • Fav: ${topName}`,
-          gameUrl: "playzone.app/play/jutsu",
+          gameUrl: "https://playzone-omega.vercel.app/play/jutsu",
         }).then(setShareImage);
         return;
       }
@@ -145,7 +144,7 @@ function JutsuInner({ stream }: { stream: MediaStream }) {
         score={state.score}
         subtitle={`${state.totalJutsus} jutsus performed • ${state.bestCombo}x best combo`}
         shareImage={shareImage}
-        gameUrl="https://playzone.app/play/jutsu"
+        gameUrl="https://playzone-omega.vercel.app/play/jutsu"
         onPlayAgain={reset}
       />
     );
@@ -192,7 +191,6 @@ function JutsuInner({ stream }: { stream: MediaStream }) {
           >
             {modelLoading ? "Loading..." : "Begin Jutsu"}
           </button>
-          <PrivacySettings />
         </div>
       )}
     </>

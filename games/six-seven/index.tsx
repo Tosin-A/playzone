@@ -6,7 +6,6 @@ import { createInitialState, processPoseFrame, SixSevenState } from "./logic";
 import GameShell from "@/components/shell/GameShell";
 import CameraViewport from "@/components/shell/CameraViewport";
 import ShareScreen from "@/components/shell/ShareScreen";
-import PrivacySettings from "@/components/shell/PrivacySettings";
 import { generateShareCard } from "@/lib/recording/shareCard";
 import { useCamera } from "@/lib/CameraProvider";
 import { motion } from "framer-motion";
@@ -91,7 +90,7 @@ function SixSevenInner({ stream }: { stream: MediaStream }) {
           title: "6/7 Challenge",
           score: stateRef.current.count,
           subtitle: `${stateRef.current.tempo} reps/sec • ${stateRef.current.bestStreak} best streak`,
-          gameUrl: "playzone.app/play/six-seven",
+          gameUrl: "https://playzone-omega.vercel.app/play/six-seven",
         }).then(setShareImage);
         return;
       }
@@ -127,7 +126,7 @@ function SixSevenInner({ stream }: { stream: MediaStream }) {
         score={state.count}
         subtitle={`${state.tempo} reps/sec • Best streak: ${state.bestStreak}`}
         shareImage={shareImage}
-        gameUrl="https://playzone.app/play/six-seven"
+        gameUrl="https://playzone-omega.vercel.app/play/six-seven"
         onPlayAgain={reset}
       />
     );
@@ -166,7 +165,6 @@ function SixSevenInner({ stream }: { stream: MediaStream }) {
           >
             {modelLoading ? "Loading..." : "Start Challenge"}
           </button>
-          <PrivacySettings />
         </div>
       )}
     </>

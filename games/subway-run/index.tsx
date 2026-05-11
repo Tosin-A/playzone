@@ -6,7 +6,6 @@ import { createInitialState, processInput, gameStep, getScore, SubwayRunState } 
 import GameShell from "@/components/shell/GameShell";
 import CameraViewport from "@/components/shell/CameraViewport";
 import ShareScreen from "@/components/shell/ShareScreen";
-import PrivacySettings from "@/components/shell/PrivacySettings";
 import { generateShareCard } from "@/lib/recording/shareCard";
 import { useCamera } from "@/lib/CameraProvider";
 import { motion } from "framer-motion";
@@ -96,7 +95,7 @@ function SubwayRunInner({ stream }: { stream: MediaStream }) {
           title: "Subway Run",
           score,
           subtitle: `Ran ${score}m before wiping out`,
-          gameUrl: "playzone.app/play/subway-run",
+          gameUrl: "https://playzone-omega.vercel.app/play/subway-run",
         }).then(setShareImage);
         return;
       }
@@ -127,7 +126,7 @@ function SubwayRunInner({ stream }: { stream: MediaStream }) {
         score={`${score}m`}
         subtitle="Wipeout!"
         shareImage={shareImage}
-        gameUrl="https://playzone.app/play/subway-run"
+        gameUrl="https://playzone-omega.vercel.app/play/subway-run"
         onPlayAgain={reset}
       />
     );
@@ -180,7 +179,6 @@ function SubwayRunInner({ stream }: { stream: MediaStream }) {
           >
             {modelLoading ? "Loading..." : "Run!"}
           </button>
-          <PrivacySettings />
         </div>
       )}
     </div>

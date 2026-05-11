@@ -6,7 +6,6 @@ import { createInitialState, processFrame, DontSmileState } from "./logic";
 import GameShell from "@/components/shell/GameShell";
 import CameraViewport from "@/components/shell/CameraViewport";
 import ShareScreen from "@/components/shell/ShareScreen";
-import PrivacySettings from "@/components/shell/PrivacySettings";
 import { generateShareCard } from "@/lib/recording/shareCard";
 import { useCamera } from "@/lib/CameraProvider";
 import { motion } from "framer-motion";
@@ -120,7 +119,7 @@ function DontSmileInner({ stream }: { stream: MediaStream }) {
           title: "Don't Smile",
           score: "60.0s",
           subtitle: "Stone cold. Never cracked.",
-          gameUrl: "playzone.app/play/dont-smile",
+          gameUrl: "https://playzone-omega.vercel.app/play/dont-smile",
         }).then(setShareImage);
         return;
       }
@@ -140,7 +139,7 @@ function DontSmileInner({ stream }: { stream: MediaStream }) {
           title: "Don't Smile",
           score: `${seconds}s`,
           subtitle,
-          gameUrl: "playzone.app/play/dont-smile",
+          gameUrl: "https://playzone-omega.vercel.app/play/dont-smile",
         }).then(setShareImage);
         return;
       }
@@ -176,9 +175,10 @@ function DontSmileInner({ stream }: { stream: MediaStream }) {
     return (
       <ShareScreen
         score={`${seconds}s`}
+        numericScore={state.survivalTime / 1000}
         subtitle={subtitle}
         shareImage={shareImage}
-        gameUrl="https://playzone.app/play/dont-smile"
+        gameUrl="https://playzone-omega.vercel.app/play/dont-smile"
         onPlayAgain={reset}
       />
     );
@@ -220,7 +220,6 @@ function DontSmileInner({ stream }: { stream: MediaStream }) {
           >
             {modelLoading ? "Loading..." : "I Won't Smile"}
           </button>
-          <PrivacySettings />
         </div>
       )}
     </>

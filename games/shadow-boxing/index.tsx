@@ -6,7 +6,6 @@ import { createInitialState, processPoseFrame, ShadowBoxingState } from "./logic
 import GameShell from "@/components/shell/GameShell";
 import CameraViewport from "@/components/shell/CameraViewport";
 import ShareScreen from "@/components/shell/ShareScreen";
-import PrivacySettings from "@/components/shell/PrivacySettings";
 import { generateShareCard } from "@/lib/recording/shareCard";
 import { useCamera } from "@/lib/CameraProvider";
 import { motion } from "framer-motion";
@@ -107,7 +106,7 @@ function ShadowBoxingInner({ stream }: { stream: MediaStream }) {
           title: "Shadow Boxing",
           score: `${s.player1.punches} - ${s.player2.punches}`,
           subtitle: `${winner} wins! • Best combo: ${Math.max(s.player1.bestCombo, s.player2.bestCombo)}`,
-          gameUrl: "playzone.app/play/shadow-boxing",
+          gameUrl: "https://playzone-omega.vercel.app/play/shadow-boxing",
         }).then(setShareImage);
         return;
       }
@@ -142,9 +141,10 @@ function ShadowBoxingInner({ stream }: { stream: MediaStream }) {
     return (
       <ShareScreen
         score={`${state.player1.punches} - ${state.player2.punches}`}
+        numericScore={Math.max(state.player1.punches, state.player2.punches)}
         subtitle={winner}
         shareImage={shareImage}
-        gameUrl="https://playzone.app/play/shadow-boxing"
+        gameUrl="https://playzone-omega.vercel.app/play/shadow-boxing"
         onPlayAgain={reset}
       />
     );
@@ -186,7 +186,6 @@ function ShadowBoxingInner({ stream }: { stream: MediaStream }) {
           >
             {modelLoading ? "Loading..." : "Fight!"}
           </button>
-          <PrivacySettings />
         </div>
       )}
     </>
