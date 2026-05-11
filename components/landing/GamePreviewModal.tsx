@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -63,7 +64,17 @@ export default function GamePreviewModal({ game, onClose }: GamePreviewModalProp
               <div
                 className={`relative min-h-[24rem] bg-gradient-to-br ${game.gradient} overflow-hidden`}
               >
-                <div className="absolute inset-0 bg-black/45" />
+                {game.thumbnail && (
+                  <Image
+                    src={game.thumbnail}
+                    alt=""
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="object-cover object-top"
+                    aria-hidden
+                  />
+                )}
+                <div className={`absolute inset-0 ${game.thumbnail ? "bg-black/60" : "bg-black/45"}`} />
 
                 <motion.div
                   className="absolute -left-14 -top-14 h-56 w-56 rounded-full blur-2xl"

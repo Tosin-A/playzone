@@ -4,6 +4,7 @@ export interface GameMeta {
   description: string;
   gradient: string;
   available: boolean;
+  thumbnail?: string; // path under /public, e.g. "/games/shadow-boxing.jpg"
   previewFrames: [string, string, string];
   immersive: {
     subtitle: string;
@@ -23,6 +24,7 @@ export const GAMES: GameMeta[] = [
     // Warm rose→amber: confidence, attraction, "golden hour" energy
     gradient: "from-rose-400 via-orange-400 to-amber-300",
     available: true,
+    thumbnail: "/games/rizz.png",
     previewFrames: ["Flirt combo", "Face lock", "Aura check"],
     immersive: {
       subtitle: "The Charisma Trial",
@@ -40,6 +42,7 @@ export const GAMES: GameMeta[] = [
     // Hot orange→red: urgency, speed, competition
     gradient: "from-orange-400 to-red-600",
     available: true,
+    thumbnail: "/games/six-seven.png",
     previewFrames: ["Left up", "Right up", "Speed burst"],
     immersive: {
       subtitle: "Tempo Discipline Arc",
@@ -57,6 +60,7 @@ export const GAMES: GameMeta[] = [
     // Deep red→rose: fighting game energy, intensity
     gradient: "from-red-500 to-rose-800",
     available: true,
+    thumbnail: "/games/shadow-boxing.png",
     previewFrames: ["Guard stance", "Punch chain", "Hit confirm"],
     immersive: {
       subtitle: "Street Duel Protocol",
@@ -74,6 +78,7 @@ export const GAMES: GameMeta[] = [
     // Vivid violet→deep indigo: stylish, dancer energy
     gradient: "from-violet-400 to-indigo-700",
     available: true,
+    thumbnail: "/games/pose-off.png",
     previewFrames: ["Pose lock", "Mirror read", "Time attack"],
     immersive: {
       subtitle: "Pose Memory Saga",
@@ -91,6 +96,7 @@ export const GAMES: GameMeta[] = [
     // Bright yellow→orange: comedy, mischief, sunshine energy
     gradient: "from-yellow-300 to-orange-500",
     available: true,
+    thumbnail: "/games/dont-smile.png",
     previewFrames: ["Laugh bait", "Blink test", "Composure"],
     immersive: {
       subtitle: "Poker Face Gauntlet",
@@ -108,6 +114,7 @@ export const GAMES: GameMeta[] = [
     // Electric blue→dark violet: chakra energy, ninja
     gradient: "from-blue-400 to-violet-900",
     available: true,
+    thumbnail: "/games/jutsu.png",
     previewFrames: ["Seal prep", "Body glyph", "Chakra sync"],
     immersive: {
       subtitle: "Forbidden Hand-Sign Exam",
@@ -125,6 +132,7 @@ export const GAMES: GameMeta[] = [
     // Fuchsia→purple: mirror/symmetry, pop energy
     gradient: "from-fuchsia-400 to-purple-700",
     available: true,
+    thumbnail: "/games/mirror.png",
     previewFrames: ["Dual lock", "Symmetry", "Sync bonus"],
     immersive: {
       subtitle: "Twin Soul Sync",
@@ -176,6 +184,7 @@ export const GAMES: GameMeta[] = [
     // Dark slate→violet: intense, hypnotic, uncomfortable
     gradient: "from-slate-600 to-violet-900",
     available: true,
+    thumbnail: "/games/stare-off.png",
     previewFrames: ["Eye lock", "Blink bait", "Nerve test"],
     immersive: {
       subtitle: "Unbroken Gaze Pact",

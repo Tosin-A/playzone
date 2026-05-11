@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import type { GameMeta } from "@/lib/games";
 
@@ -40,6 +41,28 @@ export default function GameCard({ game, index, onSelectGame }: GameCardProps) {
         isUnavailable ? "cursor-not-allowed grayscale opacity-60" : "cursor-pointer"
       }`}
     >
+      {/* Thumbnail image */}
+      {game.thumbnail && (
+        <Image
+          src={game.thumbnail}
+          alt=""
+          fill
+          sizes="(max-width: 768px) 50vw, 25vw"
+          className="object-cover object-top"
+          aria-hidden
+        />
+      )}
+
+      {/* Gradient overlay — always present, stronger when no thumbnail */}
+      <div
+        aria-hidden
+        className={`absolute inset-0 bg-gradient-to-t ${
+          game.thumbnail
+            ? "from-black/80 via-black/20 to-black/10"
+            : "from-black/50 via-transparent to-transparent"
+        }`}
+      />
+
       {/* Ghost number watermark */}
       <div
         aria-hidden
