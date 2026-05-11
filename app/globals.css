@@ -28,7 +28,7 @@ body {
 
 /* ── Outlined display text ───────────────────────────────── */
 .text-outlined {
-  -webkit-text-stroke: 3px var(--foreground);
+  -webkit-text-stroke: 4px var(--foreground);
   color: transparent;
 }
 

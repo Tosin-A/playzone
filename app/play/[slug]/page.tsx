@@ -6,6 +6,9 @@ import ShadowBoxingGame from "@/games/shadow-boxing";
 import PoseOffGame from "@/games/pose-off";
 import DontSmileGame from "@/games/dont-smile";
 import StareOffGame from "@/games/stare-off";
+import JutsuGame from "@/games/jutsu";
+import MirrorGame from "@/games/mirror";
+import SubwayRunGame from "@/games/subway-run";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -32,6 +35,12 @@ export default async function GamePage({ params }: PageProps) {
       return <DontSmileGame />;
     case "stare-off":
       return <StareOffGame />;
+    case "jutsu":
+      return <JutsuGame />;
+    case "mirror":
+      return <MirrorGame />;
+    case "subway-run":
+      return <SubwayRunGame />;
     default:
       notFound();
   }

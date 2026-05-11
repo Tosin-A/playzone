@@ -11,84 +11,96 @@ export const GAMES: GameMeta[] = [
     slug: "rizz",
     title: "Rizz Rater",
     description: "AI rates your charisma from 0 to 100",
-    gradient: "from-emerald-500 to-cyan-500",
+    // Warm rose→amber: confidence, attraction, "golden hour" energy
+    gradient: "from-rose-400 via-orange-400 to-amber-300",
     available: true,
   },
   {
     slug: "six-seven",
     title: "6/7",
     description: "Alternate hand raises — how many in 30 seconds?",
-    gradient: "from-orange-500 to-red-500",
+    // Hot orange→red: urgency, speed, competition
+    gradient: "from-orange-400 to-red-600",
     available: true,
   },
   {
     slug: "shadow-boxing",
     title: "Shadow Boxing",
     description: "2-player punch battle — most hits wins",
-    gradient: "from-red-600 to-rose-500",
+    // Deep red→rose: fighting game energy, intensity
+    gradient: "from-red-500 to-rose-800",
     available: true,
   },
   {
     slug: "pose-off",
     title: "Pose-Off",
     description: "Match all poses as fast as possible",
-    gradient: "from-violet-500 to-indigo-500",
+    // Vivid violet→deep indigo: stylish, dancer energy
+    gradient: "from-violet-400 to-indigo-700",
     available: true,
   },
   {
     slug: "dont-smile",
     title: "Don't Smile",
     description: "Keep a straight face while we try to break you",
-    gradient: "from-yellow-500 to-orange-500",
+    // Bright yellow→orange: comedy, mischief, sunshine energy
+    gradient: "from-yellow-300 to-orange-500",
     available: true,
   },
   {
-    slug: "hadouken",
-    title: "Hadouken",
-    description: "Throw fireballs with your hands",
-    gradient: "from-blue-500 to-purple-600",
-    available: false,
+    slug: "jutsu",
+    title: "Jutsu",
+    description: "Perform Naruto-style jutsus with your body",
+    // Electric blue→dark violet: chakra energy, ninja
+    gradient: "from-blue-400 to-violet-900",
+    available: true,
   },
   {
     slug: "mirror",
     title: "Mirror Match",
     description: "Copy each other's poses for points",
-    gradient: "from-pink-500 to-rose-500",
-    available: false,
+    // Fuchsia→purple: mirror/symmetry, pop energy
+    gradient: "from-fuchsia-400 to-purple-700",
+    available: true,
   },
   {
     slug: "freeze",
     title: "Freeze",
     description: "Musical statues — AI catches you moving",
-    gradient: "from-indigo-500 to-blue-500",
+    // Icy cyan→deep blue: cold, stillness, frozen
+    gradient: "from-cyan-300 to-blue-800",
     available: false,
   },
   {
     slug: "air-drums",
     title: "Air Drums",
     description: "Play a drum kit in thin air",
-    gradient: "from-red-500 to-orange-500",
+    // Amber→deep red: warm percussion, stage lights
+    gradient: "from-amber-400 to-red-700",
     available: false,
   },
   {
     slug: "stare-off",
     title: "Stare Off",
     description: "Hold eye contact as long as you can",
-    gradient: "from-violet-500 to-purple-600",
+    // Dark slate→violet: intense, hypnotic, uncomfortable
+    gradient: "from-slate-600 to-violet-900",
     available: true,
   },
   {
     slug: "posture",
     title: "Posture Police",
     description: "Get roasted every time you slouch",
-    gradient: "from-teal-500 to-green-500",
+    // Emerald→teal: health, authority, crisp
+    gradient: "from-emerald-400 to-teal-700",
     available: false,
   },
   {
     slug: "subway-run",
     title: "Subway Run",
     description: "Endless runner controlled by your body",
-    gradient: "from-fuchsia-500 to-pink-500",
-    available: false,
+    // Lime→green: speed, city, go
+    gradient: "from-lime-300 to-emerald-600",
+    available: true,
   },
 ];
