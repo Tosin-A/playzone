@@ -27,8 +27,6 @@ body {
 }
 
 /* ── Outlined display text ───────────────────────────────── */
-/* Used for the "PLAY" wordmark: white hollow stroke against  */
-/* the solid orange "ZONE" — creates hollow/filled drama     */
 .text-outlined {
   -webkit-text-stroke: 3px var(--foreground);
   color: transparent;
@@ -45,7 +43,6 @@ body {
 }
 
 /* ── Film grain overlay ──────────────────────────────────── */
-/* Applied to the landing page wrapper only, not game pages  */
 .grain::before {
   content: '';
   position: absolute;
@@ -57,40 +54,76 @@ body {
   z-index: 0;
 }
 
-/* ── Hero entrance animations ────────────────────────────── */
+/* ── Generic stagger entrance ────────────────────────────── */
 @keyframes heroSlide {
-  from {
-    opacity: 0;
-    transform: translateY(32px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .hero-line {
   animation: heroSlide 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 .hero-line-1 { animation-delay: 0s; }
-.hero-line-2 { animation-delay: 0.07s; }
-.hero-line-3 { animation-delay: 0.14s; }
-.hero-line-4 { animation-delay: 0.24s; }
+/* hero-line-2 intentionally unused — wordmark uses directional variants */
+.hero-line-3 { animation-delay: 0.28s; }   /* bottom bar: after wordmark */
+.hero-line-4 { animation-delay: 0.38s; }
+
+/* ── Wordmark directional entrances ──────────────────────── */
+/* "PLAY" closes in from the left (hollow text, leading edge)  */
+/* "ZONE" closes in from the right (solid orange, trailing)    */
+/* Together they create an arcade-marquee "closing curtain"   */
+@keyframes heroPlayIn {
+  from { opacity: 0; transform: translateX(-32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes heroZoneIn {
+  from { opacity: 0; transform: translateX(32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.hero-play {
+  animation: heroPlayIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both;
+}
+.hero-zone {
+  animation: heroZoneIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+}
 
 /* ── Scroll bounce ───────────────────────────────────────── */
 @keyframes nudgeDown {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(5px); }
+  50%       { transform: translateY(5px); }
 }
 .nudge-down {
   animation: nudgeDown 1.6s ease-in-out infinite;
 }
 
-/* ── Live pulse ──────────────────────────────────────────── */
+/* ── Live indicator pulse ────────────────────────────────── */
 @keyframes livePulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
+  50%       { opacity: 0.3; }
 }
 .live-dot {
   animation: livePulse 1.8s ease-in-out infinite;
+}
+
+/* ── Camera scan pulse (PermissionGate "requesting" state) ── */
+@keyframes cameraScan {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.55; transform: scale(0.92); }
+}
+.camera-scanning {
+  animation: cameraScan 0.95s ease-in-out infinite;
+}
+
+/* ── Reduced motion ──────────────────────────────────────── */
+/* Framer Motion auto-respects this; CSS animations need the  */
+/* explicit override below.                                    */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

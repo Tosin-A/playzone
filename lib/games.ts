@@ -38,9 +38,9 @@ export const GAMES: GameMeta[] = [
   {
     slug: "dont-smile",
     title: "Don't Smile",
-    description: "Watch funny clips without cracking a grin",
+    description: "Keep a straight face while we try to break you",
     gradient: "from-yellow-500 to-orange-500",
-    available: false,
+    available: true,
   },
   {
     slug: "hadouken",
@@ -64,13 +64,6 @@ export const GAMES: GameMeta[] = [
     available: false,
   },
   {
-    slug: "time-machine",
-    title: "Time Machine",
-    description: "See yourself as a 1970s yearbook photo",
-    gradient: "from-amber-600 to-yellow-500",
-    available: false,
-  },
-  {
     slug: "air-drums",
     title: "Air Drums",
     description: "Play a drum kit in thin air",
@@ -82,7 +75,7 @@ export const GAMES: GameMeta[] = [
     title: "Stare Off",
     description: "Hold eye contact as long as you can",
     gradient: "from-violet-500 to-purple-600",
-    available: false,
+    available: true,
   },
   {
     slug: "posture",

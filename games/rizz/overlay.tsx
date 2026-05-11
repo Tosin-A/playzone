@@ -39,7 +39,7 @@ export default function RizzOverlay({ phase, progress, score, oneLiner, liveScor
                   cy="50"
                   r="45"
                   fill="none"
-                  stroke="#00ff88"
+                  style={{ stroke: "var(--accent)" }}
                   strokeWidth="3"
                   strokeLinecap="round"
                   strokeDasharray={`${progress * 2.83} 283`}
@@ -66,9 +66,9 @@ export default function RizzOverlay({ phase, progress, score, oneLiner, liveScor
         {phase === "done" && score !== undefined && (
           <motion.div
             key="result"
-            initial={{ opacity: 0, scale: 0.5 }}
+            initial={{ opacity: 0, scale: 0.7 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: "spring", bounce: 0.4 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col items-center gap-3 bg-black/70 backdrop-blur-md rounded-3xl p-8"
           >
             <span className="text-5xl font-bold font-[family-name:var(--font-display)] text-accent">

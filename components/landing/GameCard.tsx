@@ -14,16 +14,29 @@ export default function GameCard({ game, index }: GameCardProps) {
 
   const content = (
     <motion.div
+      // ── Entrance: scroll-triggered, staggered ────────────────
+      // Cards are below the fold (hero is full-dvh), so they
+      // animate in WHEN the user scrolls to them — not on mount.
+      // once:true so re-scrolling up doesn't reset the animation.
       initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      // ── Gesture states ───────────────────────────────────────
+      // Hover: lift card 5px (physical, like pressing from below)
+      // Tap:   scale down 3% (immediate press feedback on mobile)
       whileHover={
         game.available
           ? { y: -5, transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] } }
           : undefined
       }
+      whileTap={
+        game.available
+          ? { scale: 0.97, transition: { duration: 0.1 } }
+          : undefined
+      }
       transition={{
-        delay: index * 0.04,
-        duration: 0.45,
+        delay: index * 0.03,
+        duration: 0.4,
         ease: [0.16, 1, 0.3, 1],
       }}
       className={`relative aspect-[3/4] rounded-2xl bg-gradient-to-br ${game.gradient} overflow-hidden flex flex-col group ${

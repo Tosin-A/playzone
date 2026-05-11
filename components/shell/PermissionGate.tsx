@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, ReactNode } from "react";
+import { motion } from "framer-motion";
 
 type PermissionState = "idle" | "requesting" | "granted" | "denied";
 
@@ -47,8 +48,19 @@ export default function PermissionGate({ children }: PermissionGateProps) {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center gap-6 p-8 text-center min-h-[60vh]">
-      <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      className="flex flex-col items-center justify-center gap-6 p-8 text-center min-h-[60vh]"
+    >
+      {/* Camera icon — pulses during "requesting" state to show
+          the browser permission prompt is pending.             */}
+      <div
+        className={`w-20 h-20 rounded-full bg-white/5 flex items-center justify-center ${
+          state === "requesting" ? "camera-scanning" : ""
+        }`}
+      >
         <svg
           width="40"
           height="40"
@@ -67,7 +79,7 @@ export default function PermissionGate({ children }: PermissionGateProps) {
           <p className="text-red-400 max-w-sm">{error}</p>
           <button
             onClick={requestCamera}
-            className="px-6 py-3 bg-white/10 rounded-2xl text-foreground font-medium hover:bg-white/15 transition-colors"
+            className="px-6 py-3 bg-white/10 rounded-2xl text-foreground font-medium hover:bg-white/15 active:scale-[0.97] transition-all duration-150"
           >
             Try Again
           </button>
@@ -78,17 +90,18 @@ export default function PermissionGate({ children }: PermissionGateProps) {
             Camera Required
           </h2>
           <p className="text-white/60 max-w-sm">
-            This game uses your webcam. Video never leaves your device — all processing happens in your browser.
+            This game uses your webcam. Video never leaves your device — all
+            processing happens in your browser.
           </p>
           <button
             onClick={requestCamera}
             disabled={state === "requesting"}
-            className="px-6 py-3 bg-accent text-black font-semibold rounded-2xl hover:bg-accent-dim transition-colors disabled:opacity-50"
+            className="px-6 py-3 bg-accent text-black font-semibold rounded-2xl hover:bg-accent-dim active:scale-[0.97] transition-all duration-150 disabled:opacity-50"
           >
             {state === "requesting" ? "Requesting..." : "Enable Camera"}
           </button>
         </>
       )}
-    </div>
+    </motion.div>
   );
 }

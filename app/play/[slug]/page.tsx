@@ -4,6 +4,8 @@ import RizzGame from "@/games/rizz";
 import SixSevenGame from "@/games/six-seven";
 import ShadowBoxingGame from "@/games/shadow-boxing";
 import PoseOffGame from "@/games/pose-off";
+import DontSmileGame from "@/games/dont-smile";
+import StareOffGame from "@/games/stare-off";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -26,6 +28,10 @@ export default async function GamePage({ params }: PageProps) {
       return <ShadowBoxingGame />;
     case "pose-off":
       return <PoseOffGame />;
+    case "dont-smile":
+      return <DontSmileGame />;
+    case "stare-off":
+      return <StareOffGame />;
     default:
       notFound();
   }

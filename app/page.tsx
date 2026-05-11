@@ -51,12 +51,15 @@ export default function Home() {
         {/* contrast is the hero's single biggest statement.      */}
         <div className="relative z-10 flex-1 flex flex-col justify-center">
           <h1
-            className="hero-line hero-line-2 font-[family-name:var(--font-display)] font-bold uppercase leading-[0.86] tracking-tight select-none"
+            className="font-[family-name:var(--font-display)] font-bold uppercase leading-[0.86] tracking-tight select-none"
             style={{ fontSize: "clamp(5.5rem, 24vw, 19rem)" }}
           >
-            <span className="block text-outlined">Play</span>
+            {/* Each word has its own directional entrance:          */}
+            {/* PLAY slides in from the left, ZONE from the right,   */}
+            {/* so they close in toward each other like a curtain.   */}
+            <span className="hero-play block text-outlined">Play</span>
             <span
-              className="block text-accent"
+              className="hero-zone block text-accent"
               style={{
                 textShadow:
                   "0 0 80px oklch(0.82 0.22 50 / 0.4), 0 0 200px oklch(0.82 0.22 50 / 0.15)",
