@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+:root {
+  --background: oklch(0.09 0.008 265);
+  --surface: oklch(0.13 0.008 265);
+  --foreground: oklch(0.96 0.004 90);
+  --muted: oklch(0.50 0.006 265);
+  --accent: oklch(0.82 0.22 50);
+  --accent-dim: oklch(0.72 0.22 50);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-dim: var(--accent-dim);
+  --font-sans: var(--font-barlow);
+  --font-display: var(--font-teko);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), sans-serif;
+}
+
+/* ── Outlined display text ───────────────────────────────── */
+/* Used for the "PLAY" wordmark: white hollow stroke against  */
+/* the solid orange "ZONE" — creates hollow/filled drama     */
+.text-outlined {
+  -webkit-text-stroke: 3px var(--foreground);
+  color: transparent;
+}
+
+/* ── Hero dot-grid texture ───────────────────────────────── */
+.hero-grid {
+  background-image: radial-gradient(
+    circle,
+    oklch(0.96 0.004 90 / 0.07) 1px,
+    transparent 1px
+  );
+  background-size: 28px 28px;
+}
+
+/* ── Film grain overlay ──────────────────────────────────── */
+/* Applied to the landing page wrapper only, not game pages  */
+.grain::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Hero entrance animations ────────────────────────────── */
+@keyframes heroSlide {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-line {
+  animation: heroSlide 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.hero-line-1 { animation-delay: 0s; }
+.hero-line-2 { animation-delay: 0.07s; }
+.hero-line-3 { animation-delay: 0.14s; }
+.hero-line-4 { animation-delay: 0.24s; }
+
+/* ── Scroll bounce ───────────────────────────────────────── */
+@keyframes nudgeDown {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(5px); }
+}
+.nudge-down {
+  animation: nudgeDown 1.6s ease-in-out infinite;
+}
+
+/* ── Live pulse ──────────────────────────────────────────── */
+@keyframes livePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.live-dot {
+  animation: livePulse 1.8s ease-in-out infinite;
+}
