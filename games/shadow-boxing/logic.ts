@@ -9,20 +9,9 @@ const NOSE = 0;
 // const LEFT_HIP = 23;
 // const RIGHT_HIP = 24;
 
-interface PunchEvent {
-  time: number;
-  hand: "left" | "right";
-  player: 1 | 2;
-}
-
-interface DodgeEvent {
-  time: number;
-  player: 1 | 2;
-}
-
 export interface PlayerState {
   punches: number;
-  combos: number;
+  score: number; // power-weighted score
   currentCombo: number;
   bestCombo: number;
   dodges: number;
@@ -31,19 +20,19 @@ export interface PlayerState {
   lastPunchHand: "left" | "right" | null;
   prevWristPositions: { leftX: number; leftY: number; rightX: number; rightY: number } | null;
   prevNoseY: number | null;
+  lastDodgeTime: number;
 }
 
 export interface ShadowBoxingState {
   player1: PlayerState;
   player2: PlayerState;
   duration: number;
-  events: (PunchEvent | DodgeEvent)[];
 }
 
 function createPlayerState(): PlayerState {
   return {
     punches: 0,
-    combos: 0,
+    score: 0,
     currentCombo: 0,
     bestCombo: 0,
     dodges: 0,
@@ -52,6 +41,7 @@ function createPlayerState(): PlayerState {
     lastPunchHand: null,
     prevWristPositions: null,
     prevNoseY: null,
+    lastDodgeTime: 0,
   };
 }
 
@@ -60,31 +50,36 @@ export function createInitialState(): ShadowBoxingState {
     player1: createPlayerState(),
     player2: createPlayerState(),
     duration: 0,
-    events: [],
   };
 }
 
 const PUNCH_VELOCITY_THRESHOLD = 0.04; // normalized coords per frame
-const DODGE_THRESHOLD = 0.03; // vertical movement of nose
+const PUNCH_POWER_MED = 0.07; // medium power threshold
+const PUNCH_POWER_HEAVY = 0.11; // heavy power threshold
+const DODGE_THRESHOLD = 0.04; // vertical movement of nose
+const DODGE_COOLDOWN_MS = 500;
+
+function getPunchPower(velocity: number): number {
+  if (velocity >= PUNCH_POWER_HEAVY) return 3;
+  if (velocity >= PUNCH_POWER_MED) return 2;
+  return 1;
+}
 
 function detectPunchesForPlayer(
   landmarks: { x: number; y: number; z: number }[],
   playerState: PlayerState,
-  now: number,
-  playerNum: 1 | 2
-): { state: PlayerState; newPunches: PunchEvent[]; newDodges: DodgeEvent[] } {
+  now: number
+): PlayerState {
   const leftWrist = landmarks[LEFT_WRIST];
   const rightWrist = landmarks[RIGHT_WRIST];
   const leftShoulder = landmarks[LEFT_SHOULDER];
   const rightShoulder = landmarks[RIGHT_SHOULDER];
   const nose = landmarks[NOSE];
 
-  const newPunches: PunchEvent[] = [];
-  const newDodges: DodgeEvent[] = [];
   const newState = { ...playerState };
 
   if (!leftWrist || !rightWrist || !leftShoulder || !rightShoulder || !nose) {
-    return { state: newState, newPunches, newDodges };
+    return newState;
   }
 
   const currPositions = {
@@ -106,54 +101,44 @@ function detectPunchesForPlayer(
     const rightVelY = Math.abs(currPositions.rightY - prev.rightY);
     const rightVel = Math.sqrt(rightVelX * rightVelX + rightVelY * rightVelY);
 
-    // Left punch: high velocity + wrist extended forward (past shoulder on z-axis roughly)
-    if (leftVel > PUNCH_VELOCITY_THRESHOLD && leftWrist.y < leftShoulder.y + 0.1) {
-      // Debounce: don't count if same hand punched within 200ms
-      const lastPunchTime = playerState.punchTimestamps[playerState.punchTimestamps.length - 1] ?? 0;
-      if (now - lastPunchTime > 200) {
-        newState.punches++;
-        newState.punchTimestamps = [...playerState.punchTimestamps.slice(-19), now];
-        newPunches.push({ time: now, hand: "left", player: playerNum });
+    const registerPunch = (hand: "left" | "right", vel: number) => {
+      const lastPunchTime = newState.punchTimestamps[newState.punchTimestamps.length - 1] ?? 0;
+      if (now - lastPunchTime <= 200) return;
 
-        if (playerState.lastPunchHand === "right") {
-          newState.currentCombo++;
-        } else {
-          newState.currentCombo = 1;
-        }
-        newState.lastPunchHand = "left";
+      const power = getPunchPower(vel);
+      newState.punches++;
+      newState.score += power;
+      newState.punchTimestamps = newState.punchTimestamps.length >= 20
+        ? [...newState.punchTimestamps.slice(-19), now]
+        : [...newState.punchTimestamps, now];
+
+      const opposite = hand === "left" ? "right" : "left";
+      if (newState.lastPunchHand === opposite) {
+        newState.currentCombo++;
+      } else {
+        newState.currentCombo = 1;
       }
+      newState.lastPunchHand = hand;
+    };
+
+    if (leftVel > PUNCH_VELOCITY_THRESHOLD && leftWrist.y < leftShoulder.y + 0.1) {
+      registerPunch("left", leftVel);
     }
 
     if (rightVel > PUNCH_VELOCITY_THRESHOLD && rightWrist.y < rightShoulder.y + 0.1) {
-      const lastPunchTime = playerState.punchTimestamps[playerState.punchTimestamps.length - 1] ?? 0;
-      if (now - lastPunchTime > 200) {
-        newState.punches++;
-        newState.punchTimestamps = [...playerState.punchTimestamps.slice(-19), now];
-        newPunches.push({ time: now, hand: "right", player: playerNum });
-
-        if (playerState.lastPunchHand === "left") {
-          newState.currentCombo++;
-        } else {
-          newState.currentCombo = 1;
-        }
-        newState.lastPunchHand = "right";
-      }
+      registerPunch("right", rightVel);
     }
   }
 
-  // Detect dodges via nose vertical movement
+  // Detect dodges via nose vertical movement (with cooldown)
   if (playerState.prevNoseY !== null) {
     const noseDelta = Math.abs(nose.y - playerState.prevNoseY);
-    if (noseDelta > DODGE_THRESHOLD) {
+    if (noseDelta > DODGE_THRESHOLD && now - playerState.lastDodgeTime > DODGE_COOLDOWN_MS) {
       newState.dodges++;
-      newDodges.push({ time: now, player: playerNum });
+      newState.lastDodgeTime = now;
     }
   }
 
-  // Update combo tracking
-  if (newState.currentCombo >= 3 && newState.currentCombo > playerState.currentCombo) {
-    newState.combos = Math.floor(newState.currentCombo / 3);
-  }
   newState.bestCombo = Math.max(newState.bestCombo, newState.currentCombo);
 
   // Reset combo if no punch for 800ms
@@ -174,37 +159,23 @@ function detectPunchesForPlayer(
   newState.prevWristPositions = currPositions;
   newState.prevNoseY = nose.y;
 
-  return { state: newState, newPunches, newDodges };
+  return newState;
 }
 
 export function processPoseFrame(
   result: PoseLandmarkerResult,
   state: ShadowBoxingState,
-  now: number
+  now: number,
+  maxPlayers: 1 | 2 = 2
 ): ShadowBoxingState {
   const newState = { ...state };
 
-  // Player 1 is the first detected pose, Player 2 is the second
   if (result.landmarks && result.landmarks.length >= 1) {
-    const { state: p1State, newPunches, newDodges } = detectPunchesForPlayer(
-      result.landmarks[0],
-      state.player1,
-      now,
-      1
-    );
-    newState.player1 = p1State;
-    newState.events = [...state.events, ...newPunches, ...newDodges];
+    newState.player1 = detectPunchesForPlayer(result.landmarks[0], state.player1, now);
   }
 
-  if (result.landmarks && result.landmarks.length >= 2) {
-    const { state: p2State, newPunches, newDodges } = detectPunchesForPlayer(
-      result.landmarks[1],
-      state.player2,
-      now,
-      2
-    );
-    newState.player2 = p2State;
-    newState.events = [...newState.events, ...newPunches, ...newDodges];
+  if (maxPlayers >= 2 && result.landmarks && result.landmarks.length >= 2) {
+    newState.player2 = detectPunchesForPlayer(result.landmarks[1], state.player2, now);
   }
 
   return newState;

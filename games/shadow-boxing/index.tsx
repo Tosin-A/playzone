@@ -20,7 +20,7 @@ export default function ShadowBoxingGame() {
 
   if (status === "denied" || !stream) {
     return (
-      <GameShell title="Shadow Boxing" howToPlay="Two players face the camera. Throw punches, dodge attacks. Most punches landed wins!">
+      <GameShell title="Shadow Boxing" howToPlay="Throw punches at the camera — fast, alternating hands for combos. Harder hits score more. Play solo with a friend or fight a stranger online!">
         <div className="flex items-center justify-center min-h-[60vh]">
           {status === "denied" ? (
             <p className="text-red-400">Camera access required.</p>
@@ -33,16 +33,15 @@ export default function ShadowBoxingGame() {
   }
 
   return (
-    <GameShell title="Shadow Boxing" howToPlay="Two players face the camera. Throw punches to score, alternate hands for combos. Dodge by moving your head. 45 seconds — most punches wins!">
+    <GameShell title="Shadow Boxing" howToPlay="Throw punches at the camera — fast, alternating hands for combos. Harder hits score more. Play solo with a friend or fight a stranger online!">
       <OnlineGameWrapper
         gameSlug="shadow-boxing"
         gameName="Shadow Boxing"
-        unit=" punches"
+        unit=" pts"
         renderSoloGame={() => <ShadowBoxingInner stream={stream} />}
       >
         {(props) => (
           <ShadowBoxingOnline
-            manager={props.manager}
             opponentScore={props.opponentScore}
             onScoreUpdate={props.onScoreUpdate}
             onGameFinished={props.onGameFinished}
@@ -101,12 +100,12 @@ function ShadowBoxingInner({ stream }: { stream: MediaStream }) {
       if (elapsed >= GAME_DURATION) {
         setPhase("result");
         const s = stateRef.current;
-        const winner = s.player1.punches > s.player2.punches ? "Player 1" : s.player2.punches > s.player1.punches ? "Player 2" : "Tie";
+        const winner = s.player1.score > s.player2.score ? "Player 1" : s.player2.score > s.player1.score ? "Player 2" : "Tie";
         generateShareCard({
           title: "Shadow Boxing",
-          score: `${s.player1.punches} - ${s.player2.punches}`,
+          score: `${s.player1.score} - ${s.player2.score}`,
           subtitle: `${winner} wins! • Best combo: ${Math.max(s.player1.bestCombo, s.player2.bestCombo)}`,
-          gameUrl: "https://playzone-omega.vercel.app/play/shadow-boxing",
+          gameUrl: `${typeof window !== "undefined" ? window.location.origin : ""}/play/shadow-boxing`,
         }).then(setShareImage);
         return;
       }
@@ -137,14 +136,14 @@ function ShadowBoxingInner({ stream }: { stream: MediaStream }) {
   }, []);
 
   if (phase === "result") {
-    const winner = state.player1.punches > state.player2.punches ? "Player 1 wins!" : state.player2.punches > state.player1.punches ? "Player 2 wins!" : "It's a tie!";
+    const winner = state.player1.score > state.player2.score ? "Player 1 wins!" : state.player2.score > state.player1.score ? "Player 2 wins!" : "It's a tie!";
     return (
       <ShareScreen
-        score={`${state.player1.punches} - ${state.player2.punches}`}
-        numericScore={Math.max(state.player1.punches, state.player2.punches)}
+        score={`${state.player1.score} - ${state.player2.score}`}
+        numericScore={Math.max(state.player1.score, state.player2.score)}
         subtitle={winner}
         shareImage={shareImage}
-        gameUrl="https://playzone-omega.vercel.app/play/shadow-boxing"
+        gameUrl={`${typeof window !== "undefined" ? window.location.origin : ""}/play/shadow-boxing`}
         onPlayAgain={reset}
       />
     );
