@@ -122,7 +122,7 @@ export class MultiplayerManager {
 
   leaveQueue() {
     if (this.queueChannel) {
-      this.queueChannel.unsubscribe();
+      supabase.removeChannel(this.queueChannel);
       this.queueChannel = null;
     }
   }
@@ -182,7 +182,7 @@ export class MultiplayerManager {
 
   leaveRoom() {
     if (this.gameChannel) {
-      this.gameChannel.unsubscribe();
+      supabase.removeChannel(this.gameChannel);
       this.gameChannel = null;
     }
   }

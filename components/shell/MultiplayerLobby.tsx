@@ -54,11 +54,9 @@ export default function MultiplayerLobby({
 
   useEffect(() => {
     return () => {
-      if (status === "searching") {
-        managerRef.current?.leaveQueue();
-      }
+      managerRef.current?.leaveQueue();
     };
-  }, [status]);
+  }, []);
 
   return (
     <motion.div

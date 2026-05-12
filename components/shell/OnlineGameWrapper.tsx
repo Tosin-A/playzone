@@ -55,16 +55,16 @@ export default function OnlineGameWrapper({
       setOnlinePhase((prev) => prev === "waiting" ? "result" : prev);
     };
 
-    // Join the game room
-    manager.joinRoom(
-      result.roomId,
-      (data) => setOpponentScore(data.score),
-      onOpponentFinished,
-      (count) => setCountdown(count)
-    );
-
     // Host drives the countdown
     if (result.isHost) {
+      // Host joins room and controls countdown
+      manager.joinRoom(
+        result.roomId,
+        (data) => setOpponentScore(data.score),
+        onOpponentFinished,
+        (count) => setCountdown(count)
+      );
+
       setOnlinePhase("countdown");
       for (let i = 3; i >= 1; i--) {
         setCountdown(i);
@@ -74,6 +74,7 @@ export default function OnlineGameWrapper({
       setOnlinePhase("playing");
       manager.sendCountdown(0);
     } else {
+      // Non-host joins room and listens for countdown from host
       setOnlinePhase("countdown");
       manager.joinRoom(
         result.roomId,
