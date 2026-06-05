@@ -31,12 +31,48 @@ export default function CameraViewport({
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-    video.srcObject = stream;
-    video.onloadeddata = () => {
-      video.play();
-      onVideoReady?.(video);
+
+    let cancelled = false;
+    let readySignalled = false;
+    const signalReady = () => {
+      if (cancelled || readySignalled) return;
+      // Require non-zero dimensions — MediaPipe throws on a video
+      // that exists but hasn't decoded its first frame yet.
+      if (video.videoWidth > 0 && video.videoHeight > 0) {
+        readySignalled = true;
+        onVideoReady?.(video);
+      }
     };
+
+    video.srcObject = stream;
+    // iOS Safari quirk: for MediaStream srcObjects, `loadeddata` fires
+    // unreliably and often only AFTER play() resolves — exactly the
+    // chicken-and-egg we used to have. `loadedmetadata` + `playing` +
+    // a one-frame polling fallback covers every mobile browser.
+    video.addEventListener("loadedmetadata", signalReady);
+    video.addEventListener("loadeddata", signalReady);
+    video.addEventListener("playing", signalReady);
+
+    // Try to play. The promise can reject on iOS if autoplay is
+    // restricted; we ignore the rejection because the user gesture
+    // that triggered the game start already satisfies autoplay policy.
+    const playPromise = video.play();
+    if (playPromise && typeof playPromise.catch === "function") {
+      playPromise.catch(() => {
+        // If autoplay was blocked, the user gesture will fire it.
+      });
+    }
+
+    // Belt-and-braces polling fallback: every 100ms check dimensions
+    // and signal ready when we get them. Stops as soon as we succeed.
+    const pollId = window.setInterval(signalReady, 100);
+
     return () => {
+      cancelled = true;
+      window.clearInterval(pollId);
+      video.removeEventListener("loadedmetadata", signalReady);
+      video.removeEventListener("loadeddata", signalReady);
+      video.removeEventListener("playing", signalReady);
       video.srcObject = null;
     };
   }, [stream, onVideoReady]);

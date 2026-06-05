@@ -93,16 +93,21 @@ function PoseOffInner({ stream }: { stream: MediaStream }) {
     const landmarker = await getPoseLandmarker();
 
     const runFrame = () => {
-      const video = videoRef.current;
-      if (!video) return;
-
       const now = performance.now();
       setElapsed(now - stateRef.current.startTime);
 
-      const poseResult = landmarker.detectForVideo(video, now);
-      const newState = checkPoseMatch(poseResult, stateRef.current, now);
-      stateRef.current = newState;
-      setState(newState);
+      const video = videoRef.current;
+      let newState = stateRef.current;
+      if (video && video.videoWidth > 0) {
+        try {
+          const poseResult = landmarker.detectForVideo(video, now);
+          newState = checkPoseMatch(poseResult, stateRef.current, now);
+          stateRef.current = newState;
+          setState(newState);
+        } catch {
+          /* skip frame */
+        }
+      }
 
       if (newState.finished) {
         setPhase("result");

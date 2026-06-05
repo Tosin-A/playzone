@@ -97,9 +97,6 @@ function DontSmileInner({ stream }: { stream: MediaStream }) {
     const landmarker = await getFaceLandmarker();
 
     const runFrame = () => {
-      const video = videoRef.current;
-      if (!video) return;
-
       const now = performance.now();
       const elapsed = now - stateRef.current.startTime;
       setTimeLeft(Math.max(0, Math.ceil((GAME_DURATION - elapsed) / 1000)));
@@ -126,10 +123,18 @@ function DontSmileInner({ stream }: { stream: MediaStream }) {
         return;
       }
 
-      const faceResult = landmarker.detectForVideo(video, now);
-      const newState = processFrame(faceResult, stateRef.current, now);
-      stateRef.current = newState;
-      setState(newState);
+      const video = videoRef.current;
+      let newState = stateRef.current;
+      if (video && video.videoWidth > 0) {
+        try {
+          const faceResult = landmarker.detectForVideo(video, now);
+          newState = processFrame(faceResult, stateRef.current, now);
+          stateRef.current = newState;
+          setState(newState);
+        } catch {
+          /* skip frame */
+        }
+      }
 
       if (newState.gameOver) {
         setPhase("result");

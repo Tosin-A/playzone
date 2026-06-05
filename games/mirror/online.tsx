@@ -46,22 +46,24 @@ export default function MirrorOnline({ opponentScore, onScoreUpdate, onGameFinis
       let bestMatch = 0;
 
       const runFrame = () => {
-        const video = videoRef.current;
-        if (!video) return;
-
         const now = performance.now();
         const poseElapsed = now - poseStart;
         setTimeLeft(Math.max(0, Math.ceil((POSE_DURATION - poseElapsed) / 1000)));
 
-        // Get current pose from user
-        const poseResult = landmarker.detectForVideo(video, now);
-        const userPose = extractNormalizedPose(poseResult);
-
-        if (userPose) {
-          const target = TARGET_POSES_ONLINE[poseIdx % TARGET_POSES_ONLINE.length];
-          const similarity = comparePoses(target.pose, userPose);
-          setMatchProgress(similarity);
-          bestMatch = Math.max(bestMatch, similarity);
+        const video = videoRef.current;
+        if (video && video.videoWidth > 0) {
+          try {
+            const poseResult = landmarker.detectForVideo(video, now);
+            const userPose = extractNormalizedPose(poseResult);
+            if (userPose) {
+              const target = TARGET_POSES_ONLINE[poseIdx % TARGET_POSES_ONLINE.length];
+              const similarity = comparePoses(target.pose, userPose);
+              setMatchProgress(similarity);
+              bestMatch = Math.max(bestMatch, similarity);
+            }
+          } catch {
+            /* skip frame */
+          }
         }
 
         // Time's up for this pose

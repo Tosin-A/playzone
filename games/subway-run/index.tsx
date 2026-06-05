@@ -73,21 +73,25 @@ function SubwayRunInner({ stream }: { stream: MediaStream }) {
     const landmarker = await getPoseLandmarker();
 
     const runFrame = () => {
-      const video = videoRef.current;
-      if (!video) return;
-
       const now = performance.now();
 
-      // Process pose input
-      const poseResult = landmarker.detectForVideo(video, now);
-      let s = processInput(poseResult, stateRef.current);
+      // Pose input is optional — game physics still steps if CV isn't ready,
+      // so the player sees motion even before the camera fully wakes up.
+      let s = stateRef.current;
+      const video = videoRef.current;
+      if (video && video.videoWidth > 0) {
+        try {
+          const poseResult = landmarker.detectForVideo(video, now);
+          s = processInput(poseResult, s);
+        } catch {
+          /* skip frame */
+        }
+      }
 
-      // Game physics step
       s = gameStep(s, now);
       stateRef.current = s;
       setState(s);
 
-      // Render game
       renderGame(canvasRef.current, s);
 
       if (!s.alive) {

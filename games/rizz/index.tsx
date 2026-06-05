@@ -85,9 +85,6 @@ function RizzGameInner({ stream }: { stream: MediaStream }) {
     startTimeRef.current = performance.now();
 
     const runFrame = () => {
-      const video = videoRef.current;
-      if (!video) return;
-
       const elapsed = performance.now() - startTimeRef.current;
       const pct = Math.min(100, (elapsed / SCAN_DURATION) * 100);
       setProgress(pct);
@@ -106,12 +103,18 @@ function RizzGameInner({ stream }: { stream: MediaStream }) {
         return;
       }
 
-      const faceResult = landmarker.detectForVideo(video, performance.now());
-      if (faceResult.faceBlendshapes && faceResult.faceBlendshapes.length > 0) {
-        framesRef.current.push(faceResult);
-        // Update live scores
-        const live = computeLiveScores(framesRef.current);
-        setLiveScores(live);
+      const video = videoRef.current;
+      if (video && video.videoWidth > 0) {
+        try {
+          const faceResult = landmarker.detectForVideo(video, performance.now());
+          if (faceResult.faceBlendshapes && faceResult.faceBlendshapes.length > 0) {
+            framesRef.current.push(faceResult);
+            const live = computeLiveScores(framesRef.current);
+            setLiveScores(live);
+          }
+        } catch {
+          /* skip frame */
+        }
       }
 
       animFrameRef.current = requestAnimationFrame(runFrame);

@@ -45,9 +45,6 @@ export default function JutsuOnline({ opponentScore, onScoreUpdate, onGameFinish
       startTimeRef.current = now;
 
       const runFrame = () => {
-        const video = videoRef.current;
-        if (!video) return;
-
         const now = performance.now();
         const elapsed = now - startTimeRef.current;
         setTimeLeft(Math.max(0, Math.ceil((GAME_DURATION - elapsed) / 1000)));
@@ -57,11 +54,18 @@ export default function JutsuOnline({ opponentScore, onScoreUpdate, onGameFinish
           return;
         }
 
-        const poseResult = landmarker.detectForVideo(video, now);
-        const newState = processFrame(poseResult, stateRef.current, now);
-        stateRef.current = newState;
-        setState(newState);
-        onScoreUpdate(newState.score);
+        const video = videoRef.current;
+        if (video && video.videoWidth > 0) {
+          try {
+            const poseResult = landmarker.detectForVideo(video, now);
+            const newState = processFrame(poseResult, stateRef.current, now);
+            stateRef.current = newState;
+            setState(newState);
+            onScoreUpdate(newState.score);
+          } catch {
+            /* skip frame */
+          }
+        }
 
         animFrameRef.current = requestAnimationFrame(runFrame);
       };

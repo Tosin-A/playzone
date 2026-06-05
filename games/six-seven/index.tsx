@@ -79,9 +79,8 @@ function SixSevenInner({ stream }: { stream: MediaStream }) {
     const landmarker = await getPoseLandmarker();
 
     const runFrame = () => {
-      const video = videoRef.current;
-      if (!video) return;
-
+      // Tick the timer first — independent of CV so the loop stays
+      // alive on mobile while the video element finishes decoding.
       const elapsed = performance.now() - startTimeRef.current;
       const remaining = Math.max(0, Math.ceil((GAME_DURATION - elapsed) / 1000));
       setTimeLeft(remaining);
@@ -97,10 +96,17 @@ function SixSevenInner({ stream }: { stream: MediaStream }) {
         return;
       }
 
-      const poseResult = landmarker.detectForVideo(video, performance.now());
-      const newState = processPoseFrame(poseResult, stateRef.current, performance.now());
-      stateRef.current = newState;
-      setState(newState);
+      const video = videoRef.current;
+      if (video && video.videoWidth > 0) {
+        try {
+          const poseResult = landmarker.detectForVideo(video, performance.now());
+          const newState = processPoseFrame(poseResult, stateRef.current, performance.now());
+          stateRef.current = newState;
+          setState(newState);
+        } catch {
+          /* skip frame on detector error — loop continues */
+        }
+      }
 
       animFrameRef.current = requestAnimationFrame(runFrame);
     };

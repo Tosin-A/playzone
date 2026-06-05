@@ -42,19 +42,22 @@ export default function PoseOffOnline({ opponentScore, onScoreUpdate, onGameFini
       stateRef.current = initial;
 
       const runFrame = () => {
-        const video = videoRef.current;
-        if (!video) return;
-
         const now = performance.now();
         setElapsed(now - stateRef.current.startTime);
 
-        const poseResult = landmarker.detectForVideo(video, now);
-        const newState = checkPoseMatch(poseResult, stateRef.current, now);
-        stateRef.current = newState;
-        setState(newState);
-
-        // Broadcast poses completed as score
-        onScoreUpdate(newState.posesCompleted);
+        const video = videoRef.current;
+        let newState = stateRef.current;
+        if (video && video.videoWidth > 0) {
+          try {
+            const poseResult = landmarker.detectForVideo(video, now);
+            newState = checkPoseMatch(poseResult, stateRef.current, now);
+            stateRef.current = newState;
+            setState(newState);
+            onScoreUpdate(newState.posesCompleted);
+          } catch {
+            /* skip frame */
+          }
+        }
 
         if (newState.finished) {
           const totalSec = Math.round(newState.totalTime / 100) / 10;

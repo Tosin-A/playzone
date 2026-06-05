@@ -92,14 +92,19 @@ function StareOffInner({ stream }: { stream: MediaStream }) {
     const landmarker = await getFaceLandmarker();
 
     const runFrame = () => {
-      const video = videoRef.current;
-      if (!video) return;
-
       const now = performance.now();
-      const faceResult = landmarker.detectForVideo(video, now);
-      const newState = processFrame(faceResult, stateRef.current, now);
-      stateRef.current = newState;
-      setState(newState);
+      const video = videoRef.current;
+      let newState = stateRef.current;
+      if (video && video.videoWidth > 0) {
+        try {
+          const faceResult = landmarker.detectForVideo(video, now);
+          newState = processFrame(faceResult, stateRef.current, now);
+          stateRef.current = newState;
+          setState(newState);
+        } catch {
+          /* skip frame */
+        }
+      }
 
       if (newState.gameOver) {
         setPhase("result");

@@ -40,18 +40,21 @@ export default function StareOffOnline({ opponentScore, onScoreUpdate, onGameFin
       stateRef.current = initial;
 
       const runFrame = () => {
-        const video = videoRef.current;
-        if (!video) return;
-
         const now = performance.now();
-        const faceResult = landmarker.detectForVideo(video, now);
-        const newState = processFrame(faceResult, stateRef.current, now);
-        stateRef.current = newState;
-        setState(newState);
-
-        // Broadcast survival time as score (in tenths of seconds)
-        const survivalTenths = Math.round(newState.survivalTime / 100);
-        onScoreUpdate(survivalTenths);
+        const video = videoRef.current;
+        let newState = stateRef.current;
+        if (video && video.videoWidth > 0) {
+          try {
+            const faceResult = landmarker.detectForVideo(video, now);
+            newState = processFrame(faceResult, stateRef.current, now);
+            stateRef.current = newState;
+            setState(newState);
+            const survivalTenths = Math.round(newState.survivalTime / 100);
+            onScoreUpdate(survivalTenths);
+          } catch {
+            /* skip frame */
+          }
+        }
 
         if (newState.gameOver) {
           const survivalSec = Math.round(newState.survivalTime / 100) / 10;

@@ -48,9 +48,6 @@ export default function ShadowBoxingOnline({ opponentScore, onScoreUpdate, onGam
       startTimeRef.current = performance.now();
 
       const runFrame = () => {
-        const video = videoRef.current;
-        if (!video) return;
-
         const now = performance.now();
         const elapsed = now - startTimeRef.current;
         setTimeLeft(Math.max(0, Math.ceil((GAME_DURATION - elapsed) / 1000)));
@@ -66,18 +63,25 @@ export default function ShadowBoxingOnline({ opponentScore, onScoreUpdate, onGam
         }
 
         const prevScore = stateRef.current.player1.score;
-        const poseResult = landmarker.detectForVideo(video, now);
-        const newState = processPoseFrame(poseResult, stateRef.current, now, 1);
-        const prev = stateRef.current;
-        stateRef.current = newState;
-        // Only trigger React re-render when HUD-visible values change
-        if (
-          newState.player1.score !== prev.player1.score ||
-          newState.player1.punches !== prev.player1.punches ||
-          newState.player1.currentCombo !== prev.player1.currentCombo ||
-          newState.player1.speed !== prev.player1.speed
-        ) {
-          setState(newState);
+        let newState = stateRef.current;
+        const video = videoRef.current;
+        if (video && video.videoWidth > 0) {
+          try {
+            const poseResult = landmarker.detectForVideo(video, now);
+            newState = processPoseFrame(poseResult, stateRef.current, now, 1);
+            const prev = stateRef.current;
+            stateRef.current = newState;
+            if (
+              newState.player1.score !== prev.player1.score ||
+              newState.player1.punches !== prev.player1.punches ||
+              newState.player1.currentCombo !== prev.player1.currentCombo ||
+              newState.player1.speed !== prev.player1.speed
+            ) {
+              setState(newState);
+            }
+          } catch {
+            /* skip frame */
+          }
         }
 
         // Only broadcast when score actually changes

@@ -94,9 +94,6 @@ function JutsuInner({ stream }: { stream: MediaStream }) {
     const landmarker = await getPoseLandmarker();
 
     const runFrame = () => {
-      const video = videoRef.current;
-      if (!video) return;
-
       const now = performance.now();
       const elapsed = now - startTimeRef.current;
       setTimeLeft(Math.max(0, Math.ceil((GAME_DURATION - elapsed) / 1000)));
@@ -115,10 +112,17 @@ function JutsuInner({ stream }: { stream: MediaStream }) {
         return;
       }
 
-      const poseResult = landmarker.detectForVideo(video, now);
-      const newState = processFrame(poseResult, stateRef.current, now);
-      stateRef.current = newState;
-      setState(newState);
+      const video = videoRef.current;
+      if (video && video.videoWidth > 0) {
+        try {
+          const poseResult = landmarker.detectForVideo(video, now);
+          const newState = processFrame(poseResult, stateRef.current, now);
+          stateRef.current = newState;
+          setState(newState);
+        } catch {
+          /* skip frame */
+        }
+      }
 
       animFrameRef.current = requestAnimationFrame(runFrame);
     };

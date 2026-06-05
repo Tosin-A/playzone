@@ -86,8 +86,20 @@ function MirrorInner({ stream }: { stream: MediaStream }) {
   }, []);
 
   const captureP1Pose = useCallback(async () => {
+    // Wait up to 5s for the video to be ready — on mobile the user
+    // can tap "Capture" before the camera has finished decoding.
+    const deadline = performance.now() + 5000;
+    while (performance.now() < deadline) {
+      const v = videoRef.current;
+      if (v && v.videoWidth > 0) break;
+      await new Promise((r) => setTimeout(r, 50));
+    }
     const video = videoRef.current;
-    if (!video) return;
+    if (!video || video.videoWidth === 0) {
+      // Still not ready — bail back to the pose phase so user can retry
+      setPhase("p1-pose");
+      return;
+    }
 
     // Countdown before capture
     setPhase("p1-countdown");
@@ -98,8 +110,13 @@ function MirrorInner({ stream }: { stream: MediaStream }) {
 
     // Capture pose
     const landmarker = await getPoseLandmarker();
-    const result = landmarker.detectForVideo(video, performance.now());
-    const pose = extractNormalizedPose(result);
+    let pose: ReturnType<typeof extractNormalizedPose> = null;
+    try {
+      const result = landmarker.detectForVideo(video, performance.now());
+      pose = extractNormalizedPose(result);
+    } catch {
+      /* fall through, retry below */
+    }
 
     if (!pose) {
       // No pose detected, retry
@@ -121,11 +138,21 @@ function MirrorInner({ stream }: { stream: MediaStream }) {
       const elapsed = now - matchStart;
       setMatchTimeLeft(Math.max(0, Math.ceil((MATCH_DURATION - elapsed) / 1000)));
 
+      // Re-read the video element each frame — refs are safer than
+      // the outer-closure capture which goes stale on remount.
+      const liveVideo = videoRef.current;
+
       if (elapsed >= MATCH_DURATION) {
-        // Score final pose
-        const finalResult = landmarker.detectForVideo(video, now);
-        const finalPose = extractNormalizedPose(finalResult);
-        const score = finalPose && targetPoseRef.current ? comparePoses(targetPoseRef.current, finalPose) : 0;
+        let score = 0;
+        if (liveVideo && liveVideo.videoWidth > 0) {
+          try {
+            const finalResult = landmarker.detectForVideo(liveVideo, now);
+            const finalPose = extractNormalizedPose(finalResult);
+            score = finalPose && targetPoseRef.current ? comparePoses(targetPoseRef.current, finalPose) : 0;
+          } catch {
+            /* score stays 0 */
+          }
+        }
 
         setRoundScore(score);
         const newScores = [...stateRef.current.roundScores, score];
@@ -141,11 +168,17 @@ function MirrorInner({ stream }: { stream: MediaStream }) {
       }
 
       // Live matching feedback
-      const liveResult = landmarker.detectForVideo(video, now);
-      const livePose = extractNormalizedPose(liveResult);
-      if (livePose && targetPoseRef.current) {
-        const liveSimilarity = comparePoses(targetPoseRef.current, livePose);
-        setLiveMatch(liveSimilarity);
+      if (liveVideo && liveVideo.videoWidth > 0) {
+        try {
+          const liveResult = landmarker.detectForVideo(liveVideo, now);
+          const livePose = extractNormalizedPose(liveResult);
+          if (livePose && targetPoseRef.current) {
+            const liveSimilarity = comparePoses(targetPoseRef.current, livePose);
+            setLiveMatch(liveSimilarity);
+          }
+        } catch {
+          /* skip frame */
+        }
       }
 
       animFrameRef.current = requestAnimationFrame(runMatch);
