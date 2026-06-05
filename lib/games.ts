@@ -96,8 +96,7 @@ export const GAMES: GameMeta[] = [
     // Fiery red→amber: pure effort, gym lighting
     gradient: "from-red-500 via-orange-500 to-amber-400",
     available: true,
-    // thumbnail intentionally omitted — gradient renders instead until
-    // /public/games/push-up.png is added.
+    thumbnail: "/games/push-up.png",
     previewFrames: ["Down", "Lock out", "Counter"],
     immersive: {
       subtitle: "30-Second Burn",
