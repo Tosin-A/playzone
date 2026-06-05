@@ -8,6 +8,7 @@ import { createInitialState, processPoseFrame, PushUpState } from "./logic";
 import GameShell from "@/components/shell/GameShell";
 import CameraViewport from "@/components/shell/CameraViewport";
 import ShareScreen from "@/components/shell/ShareScreen";
+import BackToResultsButton from "@/components/shell/BackToResultsButton";
 import { generateShareCard } from "@/lib/recording/shareCard";
 import { useCamera } from "@/lib/CameraProvider";
 import { motion } from "framer-motion";
@@ -82,6 +83,7 @@ function PushUpInner({ stream }: { stream: MediaStream }) {
     await getPoseLandmarker();
     setModelLoading(false);
 
+    setShareImage(null);
     setPhase("countdown");
     setCountdown(3);
     for (let i = 3; i >= 1; i--) {
@@ -138,12 +140,11 @@ function PushUpInner({ stream }: { stream: MediaStream }) {
     };
   }, []);
 
+  // state + shareImage intentionally preserved so BackToResultsButton can
+  // re-render the share screen with the last round's score. startGame()
+  // re-initialises both at the start of the next round.
   const reset = useCallback(() => {
     setPhase("ready");
-    setState(createInitialState());
-    stateRef.current = createInitialState();
-    setTimeLeft(GAME_DURATION / 1000);
-    setShareImage(null);
   }, []);
 
   if (phase === "result") {
@@ -195,6 +196,7 @@ function PushUpInner({ stream }: { stream: MediaStream }) {
           >
             {modelLoading ? "Loading..." : "Start"}
           </button>
+          {shareImage && <BackToResultsButton onClick={() => setPhase("result")} />}
         </div>
       )}
     </>

@@ -8,6 +8,7 @@ import { createInitialState, checkPoseMatch, getCurrentTargetPose, PoseOffState 
 import GameShell from "@/components/shell/GameShell";
 import CameraViewport from "@/components/shell/CameraViewport";
 import ShareScreen from "@/components/shell/ShareScreen";
+import BackToResultsButton from "@/components/shell/BackToResultsButton";
 import { generateShareCard } from "@/lib/recording/shareCard";
 import { useCamera } from "@/lib/CameraProvider";
 import { motion, AnimatePresence } from "framer-motion";
@@ -76,6 +77,7 @@ function PoseOffInner({ stream }: { stream: MediaStream }) {
     await getPoseLandmarker();
     setModelLoading(false);
 
+    setShareImage(null);
     setPhase("countdown");
     for (let i = 3; i >= 1; i--) {
       setCountdown(i);
@@ -133,12 +135,10 @@ function PoseOffInner({ stream }: { stream: MediaStream }) {
     };
   }, []);
 
+  // state + shareImage preserved so the last result can be re-opened.
+  // startGame() re-initialises both at the start of the next round.
   const reset = useCallback(() => {
     setPhase("ready");
-    setState(createInitialState());
-    stateRef.current = createInitialState();
-    setElapsed(0);
-    setShareImage(null);
   }, []);
 
   if (phase === "result") {
@@ -197,6 +197,7 @@ function PoseOffInner({ stream }: { stream: MediaStream }) {
           >
             {modelLoading ? "Loading..." : "Start Pose-Off"}
           </button>
+          {shareImage && <BackToResultsButton onClick={() => setPhase("result")} />}
         </div>
       )}
     </>

@@ -8,6 +8,7 @@ import { createInitialState, extractNormalizedPose, comparePoses, MirrorState, N
 import GameShell from "@/components/shell/GameShell";
 import CameraViewport from "@/components/shell/CameraViewport";
 import ShareScreen from "@/components/shell/ShareScreen";
+import BackToResultsButton from "@/components/shell/BackToResultsButton";
 import { generateShareCard } from "@/lib/recording/shareCard";
 import { useCamera } from "@/lib/CameraProvider";
 import { motion } from "framer-motion";
@@ -79,6 +80,7 @@ function MirrorInner({ stream }: { stream: MediaStream }) {
     await getPoseLandmarker();
     setModelLoading(false);
 
+    setShareImage(null);
     const initial = createInitialState(5);
     setState(initial);
     stateRef.current = initial;
@@ -205,12 +207,11 @@ function MirrorInner({ stream }: { stream: MediaStream }) {
     }
   }, []);
 
+  // state + shareImage preserved so the last result can be re-opened via
+  // BackToResultsButton. startGame() re-initialises state at the next match.
   const reset = useCallback(() => {
     setPhase("ready");
-    setState(createInitialState());
-    stateRef.current = createInitialState();
     targetPoseRef.current = null;
-    setShareImage(null);
     setLiveMatch(0);
     setRoundScore(0);
   }, []);
@@ -280,6 +281,7 @@ function MirrorInner({ stream }: { stream: MediaStream }) {
           >
             {modelLoading ? "Loading..." : "Start Match"}
           </button>
+          {shareImage && <BackToResultsButton onClick={() => setPhase("final-result")} />}
         </div>
       )}
 

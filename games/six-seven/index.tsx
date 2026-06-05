@@ -8,6 +8,7 @@ import { createInitialState, processPoseFrame, SixSevenState } from "./logic";
 import GameShell from "@/components/shell/GameShell";
 import CameraViewport from "@/components/shell/CameraViewport";
 import ShareScreen from "@/components/shell/ShareScreen";
+import BackToResultsButton from "@/components/shell/BackToResultsButton";
 import { generateShareCard } from "@/lib/recording/shareCard";
 import { useGameplayRecorder, type DrawOverlay } from "@/lib/recording/useGameplayRecorder";
 import { useCamera } from "@/lib/CameraProvider";
@@ -113,6 +114,7 @@ function SixSevenInner({ stream }: { stream: MediaStream }) {
     await getPoseLandmarker();
     setModelLoading(false);
 
+    setShareImage(null);
     // Countdown
     setPhase("countdown");
     setCountdown(3);
@@ -176,12 +178,11 @@ function SixSevenInner({ stream }: { stream: MediaStream }) {
     };
   }, []);
 
+  // state, shareImage, and the recorder's blob all intentionally preserved
+  // so the player can jump back to the share screen via BackToResultsButton.
+  // startGame() re-initialises state; useGameplayRecorder.start() clears blob.
   const reset = useCallback(() => {
     setPhase("ready");
-    setState(createInitialState());
-    stateRef.current = createInitialState();
-    setTimeLeft(GAME_DURATION / 1000);
-    setShareImage(null);
   }, []);
 
   if (phase === "result") {
@@ -231,6 +232,7 @@ function SixSevenInner({ stream }: { stream: MediaStream }) {
           >
             {modelLoading ? "Loading..." : "Start Challenge"}
           </button>
+          {shareImage && <BackToResultsButton onClick={() => setPhase("result")} />}
         </div>
       )}
     </>

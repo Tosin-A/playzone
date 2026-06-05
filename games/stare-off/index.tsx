@@ -8,6 +8,7 @@ import { createInitialState, processFrame, StareOffState, CHARACTERS } from "./l
 import GameShell from "@/components/shell/GameShell";
 import CameraViewport from "@/components/shell/CameraViewport";
 import ShareScreen from "@/components/shell/ShareScreen";
+import BackToResultsButton from "@/components/shell/BackToResultsButton";
 import { generateShareCard } from "@/lib/recording/shareCard";
 import { useCamera } from "@/lib/CameraProvider";
 import { motion, AnimatePresence } from "framer-motion";
@@ -76,6 +77,7 @@ function StareOffInner({ stream }: { stream: MediaStream }) {
     await getFaceLandmarker();
     setModelLoading(false);
 
+    setShareImage(null);
     setPhase("countdown");
     for (let i = 3; i >= 1; i--) {
       setCountdown(i);
@@ -134,11 +136,10 @@ function StareOffInner({ stream }: { stream: MediaStream }) {
     };
   }, []);
 
+  // state + shareImage preserved so the last result can be re-opened.
+  // startGame() re-initialises both at the start of the next round.
   const reset = useCallback(() => {
     setPhase("select");
-    setState(createInitialState(0));
-    stateRef.current = createInitialState(0);
-    setShareImage(null);
   }, []);
 
   if (phase === "result") {
@@ -198,6 +199,7 @@ function StareOffInner({ stream }: { stream: MediaStream }) {
             ))}
           </div>
           {modelLoading && <p className="text-xs text-white/40">Loading model...</p>}
+          {shareImage && <BackToResultsButton onClick={() => setPhase("result")} />}
         </div>
       )}
     </>

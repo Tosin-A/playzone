@@ -10,6 +10,7 @@ import RizzOverlay from "./overlay";
 import GameShell from "@/components/shell/GameShell";
 import CameraViewport from "@/components/shell/CameraViewport";
 import ShareScreen from "@/components/shell/ShareScreen";
+import BackToResultsButton from "@/components/shell/BackToResultsButton";
 import { generateShareCard } from "@/lib/recording/shareCard";
 import { useCamera } from "@/lib/CameraProvider";
 
@@ -80,6 +81,8 @@ function RizzGameInner({ stream }: { stream: MediaStream }) {
 
     setPhase("scanning");
     setProgress(0);
+    setResult(null);
+    setShareImage(null);
     setLiveScores({ smile: 0, eyeContact: 0, headTilt: 0, jawline: 0 });
     framesRef.current = [];
     startTimeRef.current = performance.now();
@@ -129,11 +132,12 @@ function RizzGameInner({ stream }: { stream: MediaStream }) {
     };
   }, []);
 
+  // Note: result/shareImage intentionally NOT cleared here so the player can
+  // jump back to the share screen via BackToResultsButton. A fresh round
+  // wipes them at the top of startScan().
   const reset = useCallback(() => {
     setPhase("ready");
     setProgress(0);
-    setResult(null);
-    setShareImage(null);
     setLiveScores({ smile: 0, eyeContact: 0, headTilt: 0, jawline: 0 });
   }, []);
 
@@ -170,6 +174,7 @@ function RizzGameInner({ stream }: { stream: MediaStream }) {
           >
             {modelLoading ? "Loading model..." : "Rate My Rizz"}
           </button>
+          {result && <BackToResultsButton onClick={() => setPhase("result")} />}
         </div>
       )}
     </>
