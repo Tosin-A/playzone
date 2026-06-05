@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { submitScore, getPlayerRank } from "@/lib/leaderboard";
+import { useCamera } from "@/lib/CameraProvider";
+import EntryModal from "./EntryModal";
 
 interface ShareScreenProps {
   score: string | number;
@@ -73,6 +75,10 @@ export default function ShareScreen({
   const [submitState, setSubmitState] = useState<"idle" | "loading" | "done">("idle");
   const [rank, setRank] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // ── Giveaway entry modal ──────────────────────────────────
+  const { privacyMode } = useCamera();
+  const [entryOpen, setEntryOpen] = useState(false);
 
   const handleSubmit = useCallback(async () => {
     if (!gameSlug || leaderboardScore === null) return;
@@ -257,6 +263,33 @@ export default function ShareScreen({
           </button>
         )}
       </motion.div>
+
+      {/* Weekly draw entry */}
+      <motion.button
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.438, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
+        onClick={() => setEntryOpen(true)}
+        className="group relative w-full max-w-xs px-5 py-3 rounded-2xl border border-accent/40 bg-accent/[0.08] hover:bg-accent/[0.14] active:scale-[0.98] transition-all duration-300"
+      >
+        <span className="flex items-center justify-center gap-2 text-sm font-semibold text-accent">
+          <span className="text-base">🎟️</span>
+          Enter the weekly £30 draw
+        </span>
+        <span className="block text-[10px] text-white/40 mt-0.5">
+          Free to enter · Drawn every Monday
+        </span>
+      </motion.button>
+
+      <EntryModal
+        open={entryOpen}
+        onClose={() => setEntryOpen(false)}
+        gameSlug={gameSlug}
+        score={leaderboardScore}
+        scoreDisplay={typeof score === "string" ? score : String(score)}
+        faceShown={privacyMode === "normal"}
+        initialName={name}
+      />
 
       {/* Play again / try another */}
       <motion.div

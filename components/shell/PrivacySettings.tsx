@@ -4,7 +4,7 @@ import { useCamera, PrivacyMode } from "@/lib/CameraProvider";
 
 const MODES: { value: PrivacyMode; label: string }[] = [
   { value: "normal", label: "Off" },
-  { value: "silhouette", label: "Silhouette" },
+  { value: "face-blur", label: "Blur" },
 ];
 
 export default function PrivacySettings() {

@@ -77,16 +77,31 @@ export default function CameraViewport({
     };
   }, [stream, onVideoReady]);
 
-  // Silhouette rendering (orange theme)
+  // Face-blur rendering: detect face bbox via shared MediaPipe singleton
+  // and mosaic that region. While the detector is warming up (or in a
+  // timestamp-conflict frame), the whole frame is blurred so the face
+  // never shows unblurred. lastBbox is cached so a single missed frame
+  // doesn't reveal anything.
   useEffect(() => {
-    if (privacyMode !== "silhouette") return;
+    if (privacyMode !== "face-blur") return;
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas) return;
 
-    const ctx = canvas.getContext("2d")!;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
     let animFrame: number;
+    let cancelled = false;
+    let detector: Awaited<ReturnType<typeof getFaceLandmarker>> | null = null;
+    let lastBbox: { x: number; y: number; w: number; h: number } | null = null;
+    let frameCount = 0;
+
+    const mosaic = document.createElement("canvas");
+    const mosaicCtx = mosaic.getContext("2d");
+
+    getFaceLandmarker().then((d) => { if (!cancelled) detector = d; });
 
     const render = () => {
       if (!video.videoWidth) {
@@ -94,36 +109,83 @@ export default function CameraViewport({
         return;
       }
 
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      ctx.drawImage(video, 0, 0);
+      const w = video.videoWidth;
+      const h = video.videoHeight;
+      canvas.width = w;
+      canvas.height = h;
 
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const data = imageData.data;
+      // Detect every 2nd frame to reduce contention with the game's own
+      // face-landmark consumer (shared MediaPipe instance throws on
+      // timestamp collision).
+      if (detector && frameCount % 2 === 0) {
+        try {
+          const result = detector.detectForVideo(video, performance.now());
+          const face = result.faceLandmarks?.[0];
+          if (face && face.length > 0) {
+            let minX = 1, minY = 1, maxX = 0, maxY = 0;
+            for (const lm of face) {
+              if (lm.x < minX) minX = lm.x;
+              if (lm.x > maxX) maxX = lm.x;
+              if (lm.y < minY) minY = lm.y;
+              if (lm.y > maxY) maxY = lm.y;
+            }
+            // Asymmetric padding: face landmarker bbox is just the skin
+            // region. Hairline (top), ears (sides), jaw shape (bottom)
+            // all leak identity, so we pad generously and bias the top
+            // to swallow hair.
+            const fw = (maxX - minX) * w;
+            const fh = (maxY - minY) * h;
+            const padX = fw * 0.5;
+            const padTop = fh * 0.85;
+            const padBot = fh * 0.45;
+            const x = Math.max(0, minX * w - padX);
+            const y = Math.max(0, minY * h - padTop);
+            lastBbox = {
+              x,
+              y,
+              w: Math.min(w - x, fw + padX * 2),
+              h: Math.min(h - y, fh + padTop + padBot),
+            };
+          }
+        } catch { /* timestamp conflict with game loop — keep last bbox */ }
+      }
+      frameCount++;
 
-      for (let i = 0; i < data.length; i += 4) {
-        const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
-        if (brightness < 180) {
-          // Person → orange (#f97316)
-          data[i] = 249;
-          data[i + 1] = 115;
-          data[i + 2] = 22;
-          data[i + 3] = 255;
-        } else {
-          // Background → near-black
-          data[i] = 10;
-          data[i + 1] = 10;
-          data[i + 2] = 10;
-          data[i + 3] = 255;
-        }
+      if (lastBbox && mosaicCtx) {
+        // Targeted obfuscation: draw raw video, then chunky-mosaic the
+        // face bbox AND smear the mosaic with a blur filter so identifying
+        // structure (eye spacing, jaw angle, hair edge) can't be recovered.
+        ctx.filter = "none";
+        ctx.drawImage(video, 0, 0, w, h);
+        const { x, y, w: bw, h: bh } = lastBbox;
+        // ~40x downsample for chunky pixels resistant to upscale-deblur.
+        const scale = 0.025;
+        const tw = Math.max(1, Math.floor(bw * scale));
+        const th = Math.max(1, Math.floor(bh * scale));
+        mosaic.width = tw;
+        mosaic.height = th;
+        mosaicCtx.drawImage(video, x, y, bw, bh, 0, 0, tw, th);
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
+        ctx.filter = "blur(16px)";
+        ctx.drawImage(mosaic, 0, 0, tw, th, x, y, bw, bh);
+        ctx.restore();
+      } else {
+        // Detector hasn't seeded a bbox yet — blur the whole frame so
+        // the face is never exposed during warm-up.
+        ctx.filter = "blur(40px)";
+        ctx.drawImage(video, 0, 0, w, h);
+        ctx.filter = "none";
       }
 
-      ctx.putImageData(imageData, 0, 0);
       animFrame = requestAnimationFrame(render);
     };
 
     animFrame = requestAnimationFrame(render);
-    return () => cancelAnimationFrame(animFrame);
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(animFrame);
+    };
   }, [privacyMode]);
 
   // Debug landmark overlay (?debug=1 in URL)
@@ -195,7 +257,7 @@ export default function CameraViewport({
     return () => cancelAnimationFrame(animFrame);
   }, [debugMode]);
 
-  const showCanvas = privacyMode === "silhouette";
+  const showCanvas = privacyMode === "face-blur";
 
   return (
     <div className="relative w-full max-w-[1200px] aspect-[3/4] sm:aspect-[4/5] md:aspect-video max-h-[80vh] rounded-3xl overflow-hidden bg-black">
@@ -235,14 +297,14 @@ export default function CameraViewport({
           Off
         </button>
         <button
-          onClick={() => setPrivacyMode("silhouette")}
+          onClick={() => setPrivacyMode("face-blur")}
           className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors backdrop-blur-sm ${
-            privacyMode === "silhouette"
-              ? "bg-orange-500/80 text-white"
+            privacyMode === "face-blur"
+              ? "bg-white/30 text-white"
               : "bg-black/30 text-white/50 hover:bg-black/50 hover:text-white/70"
           }`}
         >
-          Silhouette
+          Blur
         </button>
       </div>
     </div>

@@ -10,7 +10,7 @@ import {
   ReactNode,
 } from "react";
 
-export type PrivacyMode = "normal" | "silhouette";
+export type PrivacyMode = "normal" | "face-blur";
 export type CameraStatus = "idle" | "requesting" | "granted" | "denied" | "error";
 
 interface CameraContextValue {
@@ -42,7 +42,7 @@ export function CameraProvider({ children }: { children: ReactNode }) {
   const [privacyMode, setPrivacyMode] = useState<PrivacyMode>(() => {
     if (typeof window === "undefined") return "normal";
     const saved = localStorage.getItem("playzone-privacy");
-    return saved === "silhouette" ? "silhouette" : "normal";
+    return saved === "face-blur" ? "face-blur" : "normal";
   });
 
   // Dedup concurrent requests
