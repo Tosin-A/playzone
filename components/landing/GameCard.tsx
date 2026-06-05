@@ -41,9 +41,9 @@ export default function GameCard({ game, index, onSelectGame }: GameCardProps) {
         isUnavailable ? "cursor-not-allowed grayscale opacity-60" : "cursor-pointer"
       }`}
     >
-      {/* Thumbnail image. First 4 cards are above the fold on desktop
-          (lg:grid-cols-4) and the first 2 on mobile (grid-cols-2) —
-          mark them `priority` so Next prioritizes them for LCP. */}
+      {/* Thumbnail image. On desktop the grid sits in the 56vw right
+          panel (lg:grid-cols-4) so all 8 cards paint above the fold —
+          eager-load every thumbnail to avoid LCP warnings. */}
       {game.thumbnail && (
         <Image
           src={game.thumbnail}
@@ -52,7 +52,7 @@ export default function GameCard({ game, index, onSelectGame }: GameCardProps) {
           sizes="(max-width: 768px) 50vw, 25vw"
           className="object-cover object-top"
           aria-hidden
-          priority={index < 4}
+          priority
         />
       )}
 

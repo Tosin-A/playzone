@@ -21,15 +21,27 @@ function generatePlayerId(): string {
   return Math.random().toString(36).slice(2, 10);
 }
 
-// Get or create a persistent player ID
+// Get or create a per-tab player ID.
+// Using sessionStorage avoids two tabs sharing the same matchmaking identity.
 export function getPlayerId(): string {
   if (typeof window === "undefined") return generatePlayerId();
-  let id = localStorage.getItem("playzone-player-id");
-  if (!id) {
-    id = generatePlayerId();
-    localStorage.setItem("playzone-player-id", id);
+  try {
+    let id = sessionStorage.getItem("playzone-player-id");
+    if (!id) {
+      id = generatePlayerId();
+      sessionStorage.setItem("playzone-player-id", id);
+    }
+    return id;
+  } catch {
+    // Fallback for restricted storage environments.
+    // This still allows realtime matching in the current page session.
+    const globalKey = "__playzoneEphemeralPlayerId";
+    const g = globalThis as typeof globalThis & { [key: string]: string | undefined };
+    if (!g[globalKey]) {
+      g[globalKey] = generatePlayerId();
+    }
+    return g[globalKey]!;
   }
-  return id;
 }
 
 export function getPlayerNickname(): string {
@@ -68,6 +80,7 @@ export class MultiplayerManager {
     onMatched: (result: MatchmakingResult) => void
   ): Promise<void> {
     onStatusChange("searching");
+    let hasMatched = false;
 
     const channelName = `matchmaking:${this.gameSlug}`;
     this.queueChannel = supabase.channel(channelName, {
@@ -76,34 +89,59 @@ export class MultiplayerManager {
 
     this.queueChannel
       .on("presence", { event: "sync" }, () => {
+        if (hasMatched || !this.queueChannel) return;
+
         const state = this.queueChannel!.presenceState();
-        const players = Object.entries(state).map(([key, presences]) => {
-          const p = (presences as unknown as PlayerInfo[])[0];
-          return { id: key, nickname: p?.nickname ?? "Player", joinedAt: p?.joinedAt ?? Date.now() };
+        const playersById = new Map<string, PlayerInfo>();
+
+        // Supabase presence keys are not guaranteed to equal tracked player IDs.
+        // Always read IDs from tracked presence payload and de-dupe by ID.
+        Object.values(state).forEach((presences) => {
+          const metas = presences as unknown as Array<Partial<PlayerInfo>>;
+          metas.forEach((meta) => {
+            const playerId = typeof meta.id === "string" && meta.id.length > 0 ? meta.id : null;
+            if (!playerId) return;
+
+            const existing = playersById.get(playerId);
+            const joinedAt = typeof meta.joinedAt === "number" ? meta.joinedAt : Date.now();
+            if (!existing || joinedAt < existing.joinedAt) {
+              playersById.set(playerId, {
+                id: playerId,
+                nickname: meta.nickname ?? "Player",
+                joinedAt,
+              });
+            }
+          });
         });
+        const players = Array.from(playersById.values());
 
-        // Need at least 2 players to match
+        // Need at least 2 players to match.
+        // Pair deterministically in queue order: (0,1), (2,3), ...
+        // This prevents starvation when 3+ players are waiting.
         if (players.length >= 2) {
-          // Sort by join time, match first two
           players.sort((a, b) => a.joinedAt - b.joinedAt);
-          const [first, second] = players;
 
-          // Only the first player (host) initiates the match
-          const isMe = first.id === this.playerId || second.id === this.playerId;
-          if (!isMe) return;
+          for (let i = 0; i < players.length - 1; i += 2) {
+            const first = players[i];
+            const second = players[i + 1];
+            const isMe = first.id === this.playerId || second.id === this.playerId;
+            if (!isMe) continue;
 
-          const isHost = first.id === this.playerId;
-          const opponent = isHost ? second : first;
+            const isHost = first.id === this.playerId;
+            const opponent = isHost ? second : first;
 
-          // Create deterministic room ID from both player IDs
-          const ids = [first.id, second.id].sort();
-          const roomId = `${this.gameSlug}:${ids[0]}-${ids[1]}`;
+            // Create deterministic room ID from both player IDs
+            const ids = [first.id, second.id].sort();
+            const roomId = `${this.gameSlug}:${ids[0]}-${ids[1]}`;
 
-          onStatusChange("matched");
-          onMatched({ roomId, opponent, isHost });
+            hasMatched = true;
+            onStatusChange("matched");
+            onMatched({ roomId, opponent, isHost });
 
-          // Leave queue after short delay to let both sides detect
-          setTimeout(() => this.leaveQueue(), 500);
+            // Leave queue after short delay to let both sides detect
+            setTimeout(() => this.leaveQueue(), 500);
+            break;
+          }
         }
       })
       .subscribe(async (status) => {
@@ -114,7 +152,7 @@ export class MultiplayerManager {
             joinedAt: Date.now(),
           });
         }
-        if (status === "CHANNEL_ERROR") {
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
           onStatusChange("error");
         }
       });

@@ -7,11 +7,10 @@ import RizzGame from "@/games/rizz";
 import SixSevenGame from "@/games/six-seven";
 import ShadowBoxingGame from "@/games/shadow-boxing";
 import PoseOffGame from "@/games/pose-off";
-import DontSmileGame from "@/games/dont-smile";
+import PushUpGame from "@/games/push-up";
 import StareOffGame from "@/games/stare-off";
 import JutsuGame from "@/games/jutsu";
 import MirrorGame from "@/games/mirror";
-import SubwayRunGame from "@/games/subway-run";
 import RequestCameraOnMount from "./RequestCameraOnMount";
 
 interface PageProps {
@@ -24,11 +23,10 @@ function renderGame(slug: string) {
     case "six-seven": return <SixSevenGame />;
     case "shadow-boxing": return <ShadowBoxingGame />;
     case "pose-off": return <PoseOffGame />;
-    case "dont-smile": return <DontSmileGame />;
+    case "push-up": return <PushUpGame />;
     case "stare-off": return <StareOffGame />;
     case "jutsu": return <JutsuGame />;
     case "mirror": return <MirrorGame />;
-    case "subway-run": return <SubwayRunGame />;
     default: return null;
   }
 }

@@ -2,8 +2,6 @@ import { PoseLandmarkerResult, NormalizedLandmark } from "@mediapipe/tasks-visio
 
 // MediaPipe Pose landmark indices
 const NOSE = 0;
-const LEFT_EAR = 7;
-const RIGHT_EAR = 8;
 const LEFT_SHOULDER = 11;
 const RIGHT_SHOULDER = 12;
 const LEFT_WRIST = 15;
@@ -11,6 +9,11 @@ const RIGHT_WRIST = 16;
 
 // Minimum landmark visibility (0..1) to trust a coordinate
 const MIN_VISIBILITY = 0.5;
+
+// Hands count as "alternating" when one wrist is at least this far above
+// the other in normalized image coords. Tuned so a chest-level pump
+// triggers but jitter on a held pose doesn't.
+const HAND_SEPARATION = 0.06;
 
 export type DetectionQuality = "none" | "head-only" | "full-body";
 
@@ -53,46 +56,30 @@ export function processPoseFrame(
   if (!landmarks) return { ...state, detectionQuality: "none" };
 
   const nose = landmarks[NOSE];
-  const leftEar = landmarks[LEFT_EAR];
-  const rightEar = landmarks[RIGHT_EAR];
   const leftShoulder = landmarks[LEFT_SHOULDER];
   const rightShoulder = landmarks[RIGHT_SHOULDER];
   const leftWrist = landmarks[LEFT_WRIST];
   const rightWrist = landmarks[RIGHT_WRIST];
 
-  // Need at least head + both wrists to attempt detection
-  if (!visible(nose) || !leftWrist || !rightWrist) {
+  // We only need both wrists. The gesture is relative — one hand higher
+  // than the other — so it works at any body height (head, chest, waist).
+  if (!leftWrist || !rightWrist) {
     return { ...state, detectionQuality: "none" };
   }
 
-  // Pick a reference Y for "up" — prefer shoulders (real upper-body
-  // framing), fall back to ears/nose (selfie framing). On a phone held
-  // close, shoulders are usually off-frame.
-  let leftRefY: number;
-  let rightRefY: number;
-  let quality: DetectionQuality;
+  // Track framing quality just for the UI hint, not for gating reps.
+  const quality: DetectionQuality =
+    visible(leftShoulder) && visible(rightShoulder)
+      ? "full-body"
+      : visible(nose)
+      ? "head-only"
+      : "none";
 
-  if (visible(leftShoulder) && visible(rightShoulder)) {
-    // Full body — hand counts as "up" when wrist is above the shoulder
-    leftRefY = leftShoulder.y - 0.04;
-    rightRefY = rightShoulder.y - 0.04;
-    quality = "full-body";
-  } else {
-    // Head-only fallback — hand counts as "up" when wrist is roughly
-    // at ear/nose height (i.e. you raised your arm up by your face).
-    // We compare to a Y line slightly *below* the nose so a hand by
-    // the cheek still registers.
-    const earY = visible(leftEar) && visible(rightEar)
-      ? (leftEar.y + rightEar.y) / 2
-      : nose.y;
-    const headLine = earY + 0.05;
-    leftRefY = headLine;
-    rightRefY = headLine;
-    quality = "head-only";
-  }
-
-  const leftUp = leftWrist.y < leftRefY;
-  const rightUp = rightWrist.y < rightRefY;
+  // A hand is "up" when it sits meaningfully above the other hand.
+  // This counts any alternating arm pump, not just hands above the head.
+  const dy = leftWrist.y - rightWrist.y; // negative => left higher
+  const leftUp = dy < -HAND_SEPARATION;
+  const rightUp = dy > HAND_SEPARATION;
 
   const newState = {
     ...state,

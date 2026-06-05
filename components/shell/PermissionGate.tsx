@@ -1,51 +1,31 @@
 "use client";
 
-import { useState, useCallback, ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { motion } from "framer-motion";
-
-type PermissionState = "idle" | "requesting" | "granted" | "denied";
+import { useCamera } from "@/lib/CameraProvider";
 
 interface PermissionGateProps {
-  children: (stream: MediaStream) => ReactNode;
+  children: ReactNode;
 }
 
 export default function PermissionGate({ children }: PermissionGateProps) {
-  const [state, setState] = useState<PermissionState>("idle");
-  const [stream, setStream] = useState<MediaStream | null>(null);
-  const [error, setError] = useState<string>("");
+  const { stream, status, error, requestCamera } = useCamera();
 
-  const requestCamera = useCallback(async () => {
-    setState("requesting");
-    try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: "user",
-          width: { ideal: 1280, max: 1280 },
-          height: { ideal: 720, max: 720 },
-        },
-        audio: false,
-      });
-      setStream(mediaStream);
-      setState("granted");
-    } catch (err) {
-      setState("denied");
-      if (err instanceof DOMException) {
-        if (err.name === "NotAllowedError") {
-          setError("Camera access was denied. Please allow camera access in your browser settings.");
-        } else if (err.name === "NotFoundError") {
-          setError("No camera found. Please connect a camera and try again.");
-        } else {
-          setError("Could not access camera. Please try again.");
-        }
-      } else {
-        setError("Could not access camera. Please try again.");
-      }
+  // Fire the OS prompt as soon as the gate mounts. The user has already
+  // expressed intent by navigating to a /play/* route; the gate stays on
+  // screen to (1) flash a branded "Camera Required" beat during the OS
+  // prompt and (2) recover from denial.
+  useEffect(() => {
+    if (status === "idle") {
+      requestCamera();
     }
-  }, []);
+  }, [status, requestCamera]);
 
-  if (state === "granted" && stream) {
-    return <>{children(stream)}</>;
+  if (status === "granted" && stream) {
+    return <>{children}</>;
   }
+
+  const isError = status === "denied" || status === "error";
 
   return (
     <motion.div
@@ -54,11 +34,9 @@ export default function PermissionGate({ children }: PermissionGateProps) {
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       className="flex flex-col items-center justify-center gap-6 p-8 text-center min-h-[60vh]"
     >
-      {/* Camera icon — pulses during "requesting" state to show
-          the browser permission prompt is pending.             */}
       <div
         className={`w-20 h-20 rounded-full bg-white/5 flex items-center justify-center ${
-          state === "requesting" ? "camera-scanning" : ""
+          status === "requesting" ? "camera-scanning" : ""
         }`}
       >
         <svg
@@ -74,11 +52,13 @@ export default function PermissionGate({ children }: PermissionGateProps) {
         </svg>
       </div>
 
-      {state === "denied" ? (
+      {isError ? (
         <>
-          <p className="text-red-400 max-w-sm">{error}</p>
+          <p className="text-red-400 max-w-sm">
+            {error || "Camera unavailable."}
+          </p>
           <button
-            onClick={requestCamera}
+            onClick={() => requestCamera()}
             className="px-6 py-3 bg-white/10 rounded-2xl text-foreground font-medium hover:bg-white/15 active:scale-[0.97] transition-all duration-300"
           >
             Try Again
@@ -94,11 +74,11 @@ export default function PermissionGate({ children }: PermissionGateProps) {
             processing happens in your browser.
           </p>
           <button
-            onClick={requestCamera}
-            disabled={state === "requesting"}
+            onClick={() => requestCamera()}
+            disabled={status === "requesting"}
             className="px-6 py-3 bg-accent text-black font-semibold rounded-2xl hover:bg-accent-dim active:scale-[0.97] transition-all duration-300 disabled:opacity-50"
           >
-            {state === "requesting" ? "Requesting..." : "Enable Camera"}
+            {status === "requesting" ? "Requesting..." : "Enable Camera"}
           </button>
         </>
       )}

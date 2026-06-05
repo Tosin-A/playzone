@@ -8,6 +8,7 @@ import {
 } from "@/lib/multiplayer";
 import MultiplayerLobby from "./MultiplayerLobby";
 import VSResult from "./VSResult";
+import PlayZoneLogo from "./PlayZoneLogo";
 
 export type OnlineGamePhase = "mode-select" | "matchmaking" | "countdown" | "playing" | "waiting" | "result";
 
@@ -139,28 +140,33 @@ export default function OnlineGameWrapper({
   // Mode selection screen
   if (mode === "select") {
     return (
-      <div className="flex flex-col items-center gap-5 p-6">
-        <h2 className="text-xl font-bold font-[family-name:var(--font-display)] uppercase">
-          Choose Mode
-        </h2>
-        <div className="flex gap-3">
+      <div className="flex flex-col items-center gap-6 p-6 w-full max-w-md mx-auto">
+        <PlayZoneLogo size="lg" />
+        <p className="text-[11px] uppercase tracking-[0.32em] text-white/40 font-[family-name:var(--font-display)] -mt-3">
+          Camera Arcade · One vs One
+        </p>
+        <div className="grid grid-cols-2 gap-3 w-full">
           <button
             onClick={() => setMode("solo")}
-            className="flex flex-col items-center gap-2 p-5 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors min-w-[130px]"
+            className="group relative h-20 rounded-2xl bg-gradient-to-b from-white to-neutral-300 text-black font-[family-name:var(--font-display)] text-2xl font-bold uppercase tracking-[0.18em] shadow-[0_4px_0_rgba(0,0,0,0.4),0_8px_24px_rgba(255,255,255,0.08)] hover:translate-y-[1px] hover:shadow-[0_3px_0_rgba(0,0,0,0.4),0_6px_18px_rgba(255,255,255,0.12)] active:translate-y-[2px] active:shadow-[0_1px_0_rgba(0,0,0,0.4)] transition-all"
           >
-            <span className="text-3xl">🎮</span>
-            <span className="font-semibold">Solo</span>
-            <span className="text-xs text-white/40">Play alone</span>
+            Solo
           </button>
           <button
             onClick={() => setMode("online")}
-            className="flex flex-col items-center gap-2 p-5 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors min-w-[130px] border border-accent/20"
+            className="group relative h-20 rounded-2xl text-black font-[family-name:var(--font-display)] text-2xl font-bold uppercase tracking-[0.18em] hover:translate-y-[1px] active:translate-y-[2px] transition-all"
+            style={{
+              background: "linear-gradient(180deg, var(--accent) 0%, var(--accent-dim) 100%)",
+              boxShadow:
+                "0 4px 0 color-mix(in oklch, var(--accent-dim) 60%, black), 0 0 36px color-mix(in oklch, var(--accent) 55%, transparent)",
+            }}
           >
-            <span className="text-3xl">⚔️</span>
-            <span className="font-semibold text-accent">Online VS</span>
-            <span className="text-xs text-white/40">Fight a stranger</span>
+            Duel
           </button>
         </div>
+        <p className="text-[11px] uppercase tracking-[0.28em] text-white/35 font-[family-name:var(--font-display)]">
+          Pick your mode
+        </p>
       </div>
     );
   }
@@ -172,19 +178,23 @@ export default function OnlineGameWrapper({
   // Online mode
   if (onlinePhase === "matchmaking") {
     return (
-      <MultiplayerLobby
-        gameSlug={gameSlug}
-        gameName={gameName}
-        onMatchStart={handleMatchStart}
-        onCancel={resetOnline}
-      />
+      <div className="flex flex-col items-center gap-5 w-full">
+        <PlayZoneLogo size="md" />
+        <MultiplayerLobby
+          gameSlug={gameSlug}
+          gameName={gameName}
+          onMatchStart={handleMatchStart}
+          onCancel={resetOnline}
+        />
+      </div>
     );
   }
 
   if (onlinePhase === "countdown") {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 min-h-[40vh]">
-        <p className="text-sm text-white/50">
+      <div className="flex flex-col items-center justify-center gap-5 min-h-[40vh]">
+        <PlayZoneLogo size="md" />
+        <p className="text-sm text-white/50 font-[family-name:var(--font-display)] uppercase tracking-[0.24em]">
           VS <span className="text-accent font-semibold">{opponentName}</span>
         </p>
         <motion.span
@@ -201,8 +211,11 @@ export default function OnlineGameWrapper({
 
   if (onlinePhase === "waiting") {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 min-h-[40vh]">
-        <p className="text-lg font-bold text-accent">Your score: {myFinalScore}{unit}</p>
+      <div className="flex flex-col items-center justify-center gap-5 min-h-[40vh]">
+        <PlayZoneLogo size="md" />
+        <p className="text-lg font-bold text-accent font-[family-name:var(--font-display)] uppercase tracking-[0.18em]">
+          Your score: {myFinalScore}{unit}
+        </p>
         <p className="text-sm text-white/50">Waiting for {opponentName} to finish...</p>
         <motion.div
           className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full"
@@ -215,16 +228,19 @@ export default function OnlineGameWrapper({
 
   if (onlinePhase === "result") {
     return (
-      <VSResult
-        yourScore={myFinalScore}
-        opponentScore={opponentFinalScore ?? 0}
-        yourName={myNickname}
-        opponentName={opponentName}
-        unit={unit}
-        lowerIsBetter={lowerIsBetter}
-        onPlayAgain={resetOnline}
-        onRematch={rematch}
-      />
+      <div className="flex flex-col items-center gap-4 w-full">
+        <PlayZoneLogo size="md" />
+        <VSResult
+          yourScore={myFinalScore}
+          opponentScore={opponentFinalScore ?? 0}
+          yourName={myNickname}
+          opponentName={opponentName}
+          unit={unit}
+          lowerIsBetter={lowerIsBetter}
+          onPlayAgain={resetOnline}
+          onRematch={rematch}
+        />
+      </div>
     );
   }
 
