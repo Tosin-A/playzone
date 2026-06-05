@@ -53,6 +53,21 @@ export default function ShareScreen({
     return () => cancelAnimationFrame(rafId);
   }, [score, scoreIsNumber]);
 
+  // ── Share image preview URL ────────────────────────────────
+  // The card is the share artifact. Render it on screen so the user
+  // can long-press to save (mobile pattern), see what they're about
+  // to share, and screenshot the visual — not just the page chrome.
+  const [shareImageUrl, setShareImageUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (!shareImage) {
+      setShareImageUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(shareImage);
+    setShareImageUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [shareImage]);
+
   // ── Leaderboard state ──────────────────────────────────────
   const [name, setName] = useState("");
   const [submitState, setSubmitState] = useState<"idle" | "loading" | "done">("idle");
@@ -146,6 +161,26 @@ export default function ShareScreen({
         >
           {subtitle}
         </motion.p>
+      )}
+
+      {/* Share card preview — THE artifact people screenshot. Rendered
+          as a tall 9:16 to mirror what posts to TikTok / IG Stories.
+          On mobile, long-press the image to save directly. */}
+      {shareImageUrl && (
+        <motion.div
+          initial={{ opacity: 0, y: 16, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.55, ease: [0.16, 1, 0.3, 1] }}
+          className="w-full max-w-[240px] rounded-2xl overflow-hidden border border-white/10 shadow-[0_18px_60px_-12px_rgba(255,138,61,0.35)]"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={shareImageUrl}
+            alt={`Your ${gameSlug} result — score ${score}`}
+            className="block w-full h-auto select-none"
+            draggable
+          />
+        </motion.div>
       )}
 
       {/* Leaderboard submission */}
