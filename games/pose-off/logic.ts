@@ -30,16 +30,20 @@ const LEFT_KNEE = 25;
 const RIGHT_KNEE = 26;
 const NOSE = 0;
 
+// Thresholds tuned for a selfie phone frame — arms can't extend as far
+// off-screen as on a desktop full-body shot, so the bars are lower than
+// strict anatomical correctness would require. Pair with the partial
+// match rule below (see PASS_RATIO).
 export const TARGET_POSES: TargetPose[] = [
   {
     name: "T-Pose",
     description: "Arms straight out to the sides",
     image: "/games/poses/t-pose.png",
     conditions: [
-      { landmark: LEFT_WRIST, relativeTo: LEFT_SHOULDER, direction: "left", threshold: 0.15 },
-      { landmark: RIGHT_WRIST, relativeTo: RIGHT_SHOULDER, direction: "right", threshold: 0.15 },
-      { landmark: LEFT_WRIST, relativeTo: LEFT_SHOULDER, direction: "above", threshold: -0.05 },
-      { landmark: RIGHT_WRIST, relativeTo: RIGHT_SHOULDER, direction: "above", threshold: -0.05 },
+      { landmark: LEFT_WRIST, relativeTo: LEFT_SHOULDER, direction: "left", threshold: 0.08 },
+      { landmark: RIGHT_WRIST, relativeTo: RIGHT_SHOULDER, direction: "right", threshold: 0.08 },
+      { landmark: LEFT_WRIST, relativeTo: LEFT_SHOULDER, direction: "above", threshold: -0.12 },
+      { landmark: RIGHT_WRIST, relativeTo: RIGHT_SHOULDER, direction: "above", threshold: -0.12 },
     ],
   },
   {
@@ -47,8 +51,8 @@ export const TARGET_POSES: TargetPose[] = [
     description: "Both hands above your head",
     image: "/games/poses/hands-up.png",
     conditions: [
-      { landmark: LEFT_WRIST, relativeTo: NOSE, direction: "above", threshold: 0.08 },
-      { landmark: RIGHT_WRIST, relativeTo: NOSE, direction: "above", threshold: 0.08 },
+      { landmark: LEFT_WRIST, relativeTo: NOSE, direction: "above", threshold: 0.02 },
+      { landmark: RIGHT_WRIST, relativeTo: NOSE, direction: "above", threshold: 0.02 },
     ],
   },
   {
@@ -56,8 +60,8 @@ export const TARGET_POSES: TargetPose[] = [
     description: "Dab to the left",
     image: "/games/poses/dab-left.png",
     conditions: [
-      { landmark: LEFT_WRIST, relativeTo: LEFT_SHOULDER, direction: "left", threshold: 0.12 },
-      { landmark: RIGHT_ELBOW, relativeTo: RIGHT_SHOULDER, direction: "above", threshold: 0.03 },
+      { landmark: LEFT_WRIST, relativeTo: LEFT_SHOULDER, direction: "left", threshold: 0.06 },
+      { landmark: RIGHT_ELBOW, relativeTo: RIGHT_SHOULDER, direction: "above", threshold: -0.02 },
     ],
   },
   {
@@ -65,8 +69,8 @@ export const TARGET_POSES: TargetPose[] = [
     description: "Bend your knees",
     image: "/games/poses/squat.png",
     conditions: [
-      { landmark: LEFT_HIP, relativeTo: LEFT_KNEE, direction: "above", threshold: -0.05 },
-      { landmark: RIGHT_HIP, relativeTo: RIGHT_KNEE, direction: "above", threshold: -0.05 },
+      { landmark: LEFT_HIP, relativeTo: LEFT_KNEE, direction: "above", threshold: -0.12 },
+      { landmark: RIGHT_HIP, relativeTo: RIGHT_KNEE, direction: "above", threshold: -0.12 },
     ],
   },
   {
@@ -74,8 +78,8 @@ export const TARGET_POSES: TargetPose[] = [
     description: "Right arm straight up",
     image: "/games/poses/right-arm-up.jpg",
     conditions: [
-      { landmark: RIGHT_WRIST, relativeTo: NOSE, direction: "above", threshold: 0.1 },
-      { landmark: LEFT_WRIST, relativeTo: LEFT_HIP, direction: "above", threshold: -0.15 },
+      { landmark: RIGHT_WRIST, relativeTo: NOSE, direction: "above", threshold: 0.02 },
+      { landmark: LEFT_WRIST, relativeTo: LEFT_SHOULDER, direction: "below", threshold: -0.05 },
     ],
   },
   {
@@ -83,8 +87,8 @@ export const TARGET_POSES: TargetPose[] = [
     description: "Left arm straight up",
     image: "/games/poses/left-arm-up.png",
     conditions: [
-      { landmark: LEFT_WRIST, relativeTo: NOSE, direction: "above", threshold: 0.1 },
-      { landmark: RIGHT_WRIST, relativeTo: RIGHT_HIP, direction: "above", threshold: -0.15 },
+      { landmark: LEFT_WRIST, relativeTo: NOSE, direction: "above", threshold: 0.02 },
+      { landmark: RIGHT_WRIST, relativeTo: RIGHT_SHOULDER, direction: "below", threshold: -0.05 },
     ],
   },
   {
@@ -92,8 +96,8 @@ export const TARGET_POSES: TargetPose[] = [
     description: "Cross your arms over your chest",
     image: "/games/poses/arms-crossed.png",
     conditions: [
-      { landmark: LEFT_WRIST, relativeTo: RIGHT_SHOULDER, direction: "right", threshold: -0.05 },
-      { landmark: RIGHT_WRIST, relativeTo: LEFT_SHOULDER, direction: "left", threshold: -0.05 },
+      { landmark: LEFT_WRIST, relativeTo: RIGHT_SHOULDER, direction: "right", threshold: -0.10 },
+      { landmark: RIGHT_WRIST, relativeTo: LEFT_SHOULDER, direction: "left", threshold: -0.10 },
     ],
   },
   {
@@ -101,11 +105,19 @@ export const TARGET_POSES: TargetPose[] = [
     description: "Legs wide, arms on hips",
     image: "/games/poses/wide-stance.png",
     conditions: [
-      { landmark: LEFT_WRIST, relativeTo: LEFT_HIP, direction: "above", threshold: -0.08 },
-      { landmark: RIGHT_WRIST, relativeTo: RIGHT_HIP, direction: "above", threshold: -0.08 },
+      { landmark: LEFT_WRIST, relativeTo: LEFT_HIP, direction: "above", threshold: -0.12 },
+      { landmark: RIGHT_WRIST, relativeTo: RIGHT_HIP, direction: "above", threshold: -0.12 },
     ],
   },
 ];
+
+/**
+ * Fraction of a pose's conditions that must be true for it to count as
+ * matched. Anything less than 1.0 lets you complete a pose even if one
+ * limb is slightly off-frame or the model's confidence wobbles for a
+ * single landmark — which is the dominant failure mode on mobile.
+ */
+const PASS_RATIO = 0.7;
 
 export interface PoseOffState {
   currentPoseIndex: number;
@@ -181,8 +193,10 @@ export function checkPoseMatch(
   const progress = Math.round((conditionsMet / currentPose.conditions.length) * 100);
   const newState = { ...state, matchProgress: progress };
 
-  // Pose matched if all conditions met
-  if (conditionsMet === currentPose.conditions.length) {
+  // Pose matched when we hit the pass ratio (default 70% of conditions).
+  // A single flickery landmark shouldn't gate the whole pose.
+  const required = Math.max(1, Math.ceil(currentPose.conditions.length * PASS_RATIO));
+  if (conditionsMet >= required) {
     const poseTime = now - state.poseStartTime;
     newState.poseTimes = [...state.poseTimes, poseTime];
     newState.posesCompleted = state.posesCompleted + 1;
