@@ -41,7 +41,9 @@ export default function GameCard({ game, index, onSelectGame }: GameCardProps) {
         isUnavailable ? "cursor-not-allowed grayscale opacity-60" : "cursor-pointer"
       }`}
     >
-      {/* Thumbnail image */}
+      {/* Thumbnail image. First 4 cards are above the fold on desktop
+          (lg:grid-cols-4) and the first 2 on mobile (grid-cols-2) —
+          mark them `priority` so Next prioritizes them for LCP. */}
       {game.thumbnail && (
         <Image
           src={game.thumbnail}
@@ -50,6 +52,7 @@ export default function GameCard({ game, index, onSelectGame }: GameCardProps) {
           sizes="(max-width: 768px) 50vw, 25vw"
           className="object-cover object-top"
           aria-hidden
+          priority={index < 4}
         />
       )}
 
@@ -63,24 +66,24 @@ export default function GameCard({ game, index, onSelectGame }: GameCardProps) {
         }`}
       />
 
-      {/* Ghost number watermark */}
+      {/* Ghost number watermark (static — no animation to save mobile battery) */}
       <div
         aria-hidden
         className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
       >
-        <motion.span
+        <span
           className="font-[family-name:var(--font-display)] font-bold text-white leading-none"
-          animate={{ y: [0, -4, 0], opacity: [0.08, 0.14, 0.08] }}
-          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: index * 0.1 }}
           style={{ fontSize: "clamp(7rem, 16vw, 11rem)", opacity: 0.11 }}
         >
           {num}
-        </motion.span>
+        </span>
       </div>
 
+      {/* Shine sweep — desktop only (no hover on mobile, so always-on
+          shimmer is pure GPU cost with no perceived benefit) */}
       <motion.div
         aria-hidden
-        className="absolute -left-16 top-0 h-full w-20 rotate-12 bg-white/10 blur-2xl"
+        className="hidden sm:block absolute -left-16 top-0 h-full w-20 rotate-12 bg-white/10 blur-2xl"
         animate={isUnavailable ? undefined : { x: [-36, 54, 150] }}
         transition={{
           duration: 8.5,
@@ -155,12 +158,10 @@ export default function GameCard({ game, index, onSelectGame }: GameCardProps) {
         </p>
       </div>
 
-      {/* Hover brightener */}
-      <motion.div
+      {/* Hover brightener (static border, hover state from group below) */}
+      <div
         aria-hidden
-        className="absolute inset-0 rounded-2xl border border-white/0"
-        animate={isUnavailable ? undefined : { borderColor: ["rgba(255,255,255,0)", "rgba(255,255,255,0.16)", "rgba(255,255,255,0)"] }}
-        transition={{ duration: 6.8, repeat: Infinity, ease: "easeInOut", delay: index * 0.1 }}
+        className="absolute inset-0 rounded-2xl border border-white/0 group-hover:border-white/15 transition-colors duration-300"
       />
       {isUnavailable ? (
         <>

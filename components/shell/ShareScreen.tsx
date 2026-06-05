@@ -237,7 +237,7 @@ export default function ShareScreen({
           Play Again
         </button>
         <Link
-          href="/"
+          href="/all"
           className="px-5 py-2.5 bg-white/5 rounded-2xl font-medium hover:bg-white/10 active:scale-[0.97] transition-all duration-300"
         >
           Try Another

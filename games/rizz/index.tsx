@@ -1,5 +1,7 @@
 "use client";
 
+import { getGameShareUrl } from "@/lib/share/url";
+
 import { useState, useCallback, useRef, useEffect } from "react";
 import { FaceLandmarkerResult } from "@mediapipe/tasks-vision";
 import { getFaceLandmarker } from "@/lib/cv/faceLandmarker";
@@ -99,7 +101,7 @@ function RizzGameInner({ stream }: { stream: MediaStream }) {
           title: "Rizz Rater",
           score: score.total,
           subtitle: score.oneLiner,
-          gameUrl: "https://playzone-omega.vercel.app/play/rizz",
+          gameUrl: getGameShareUrl("rizz"),
         }).then(setShareImage);
         return;
       }
@@ -138,7 +140,7 @@ function RizzGameInner({ stream }: { stream: MediaStream }) {
         score={result.total}
         subtitle={result.oneLiner}
         shareImage={shareImage}
-        gameUrl="https://playzone-omega.vercel.app/play/rizz"
+        gameUrl={getGameShareUrl("rizz")}
         onPlayAgain={reset}
       />
     );

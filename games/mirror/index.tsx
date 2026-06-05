@@ -1,5 +1,7 @@
 "use client";
 
+import { getGameShareUrl } from "@/lib/share/url";
+
 import { useState, useCallback, useRef, useEffect } from "react";
 import { getPoseLandmarker } from "@/lib/cv/poseLandmarker";
 import { createInitialState, extractNormalizedPose, comparePoses, MirrorState, NormalizedPose } from "./logic";
@@ -161,7 +163,7 @@ function MirrorInner({ stream }: { stream: MediaStream }) {
         title: "Mirror Match",
         score: totalScore,
         subtitle: `${avg}/100 avg across ${stateRef.current.totalRounds} rounds`,
-        gameUrl: "https://playzone-omega.vercel.app/play/mirror",
+        gameUrl: getGameShareUrl("mirror"),
       }).then(setShareImage);
     } else {
       setPhase("p1-pose");
@@ -193,7 +195,7 @@ function MirrorInner({ stream }: { stream: MediaStream }) {
         score={state.score}
         subtitle={`${avg}/100 average similarity`}
         shareImage={shareImage}
-        gameUrl="https://playzone-omega.vercel.app/play/mirror"
+        gameUrl={getGameShareUrl("mirror")}
         onPlayAgain={reset}
       />
     );

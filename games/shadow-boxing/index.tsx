@@ -1,5 +1,7 @@
 "use client";
 
+import { getGameShareUrl } from "@/lib/share/url";
+
 import { useState, useCallback, useRef, useEffect } from "react";
 import { getPoseLandmarker } from "@/lib/cv/poseLandmarker";
 import { createInitialState, processPoseFrame, ShadowBoxingState } from "./logic";
@@ -105,7 +107,7 @@ function ShadowBoxingInner({ stream }: { stream: MediaStream }) {
           title: "Shadow Boxing",
           score: `${s.player1.score} - ${s.player2.score}`,
           subtitle: `${winner} wins! • Best combo: ${Math.max(s.player1.bestCombo, s.player2.bestCombo)}`,
-          gameUrl: `${typeof window !== "undefined" ? window.location.origin : ""}/play/shadow-boxing`,
+          gameUrl: getGameShareUrl("shadow-boxing"),
         }).then(setShareImage);
         return;
       }
@@ -143,7 +145,7 @@ function ShadowBoxingInner({ stream }: { stream: MediaStream }) {
         numericScore={Math.max(state.player1.score, state.player2.score)}
         subtitle={winner}
         shareImage={shareImage}
-        gameUrl={`${typeof window !== "undefined" ? window.location.origin : ""}/play/shadow-boxing`}
+        gameUrl={getGameShareUrl("shadow-boxing")}
         onPlayAgain={reset}
       />
     );

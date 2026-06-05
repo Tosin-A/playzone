@@ -1,5 +1,7 @@
 "use client";
 
+import { getGameShareUrl } from "@/lib/share/url";
+
 import { useState, useCallback, useRef, useEffect } from "react";
 import { getFaceLandmarker } from "@/lib/cv/faceLandmarker";
 import { createInitialState, processFrame, DontSmileState } from "./logic";
@@ -119,7 +121,7 @@ function DontSmileInner({ stream }: { stream: MediaStream }) {
           title: "Don't Smile",
           score: "60.0s",
           subtitle: "Stone cold. Never cracked.",
-          gameUrl: "https://playzone-omega.vercel.app/play/dont-smile",
+          gameUrl: getGameShareUrl("dont-smile"),
         }).then(setShareImage);
         return;
       }
@@ -139,7 +141,7 @@ function DontSmileInner({ stream }: { stream: MediaStream }) {
           title: "Don't Smile",
           score: `${seconds}s`,
           subtitle,
-          gameUrl: "https://playzone-omega.vercel.app/play/dont-smile",
+          gameUrl: getGameShareUrl("dont-smile"),
         }).then(setShareImage);
         return;
       }
@@ -178,7 +180,7 @@ function DontSmileInner({ stream }: { stream: MediaStream }) {
         numericScore={state.survivalTime / 1000}
         subtitle={subtitle}
         shareImage={shareImage}
-        gameUrl="https://playzone-omega.vercel.app/play/dont-smile"
+        gameUrl={getGameShareUrl("dont-smile")}
         onPlayAgain={reset}
       />
     );

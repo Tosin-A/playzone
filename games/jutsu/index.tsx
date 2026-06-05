@@ -1,5 +1,7 @@
 "use client";
 
+import { getGameShareUrl } from "@/lib/share/url";
+
 import { useState, useCallback, useRef, useEffect } from "react";
 import { getPoseLandmarker } from "@/lib/cv/poseLandmarker";
 import { createInitialState, processFrame, JutsuState, JUTSUS, ActiveEffect } from "./logic";
@@ -108,7 +110,7 @@ function JutsuInner({ stream }: { stream: MediaStream }) {
           title: "Jutsu Master",
           score: s.score,
           subtitle: `${s.totalJutsus} jutsus • Best combo: ${s.bestCombo}x • Fav: ${topName}`,
-          gameUrl: "https://playzone-omega.vercel.app/play/jutsu",
+          gameUrl: getGameShareUrl("jutsu"),
         }).then(setShareImage);
         return;
       }
@@ -144,7 +146,7 @@ function JutsuInner({ stream }: { stream: MediaStream }) {
         score={state.score}
         subtitle={`${state.totalJutsus} jutsus performed • ${state.bestCombo}x best combo`}
         shareImage={shareImage}
-        gameUrl="https://playzone-omega.vercel.app/play/jutsu"
+        gameUrl={getGameShareUrl("jutsu")}
         onPlayAgain={reset}
       />
     );

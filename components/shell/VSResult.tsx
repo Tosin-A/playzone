@@ -101,7 +101,7 @@ export default function VSResult({
           Solo Play
         </button>
         <Link
-          href="/"
+          href="/all"
           className="px-5 py-2.5 bg-white/5 rounded-2xl font-medium hover:bg-white/10 transition-colors"
         >
           Home

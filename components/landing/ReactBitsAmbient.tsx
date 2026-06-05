@@ -16,7 +16,9 @@ export default function ReactBitsAmbient({ className = "" }: ReactBitsAmbientPro
   return (
     <div
       aria-hidden
-      className={`pointer-events-none absolute inset-0 overflow-hidden ${className}`}
+      // Hidden on mobile — 3 concurrent blurred orbs animating Infinity is
+      // the single biggest perf cost on the landing page on phones.
+      className={`hidden md:block pointer-events-none absolute inset-0 overflow-hidden ${className}`}
     >
       <motion.div
         className="absolute -left-16 top-8 h-56 w-56 rounded-full bg-accent/12 blur-3xl"

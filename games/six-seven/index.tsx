@@ -1,5 +1,7 @@
 "use client";
 
+import { getGameShareUrl } from "@/lib/share/url";
+
 import { useState, useCallback, useRef, useEffect } from "react";
 import { getPoseLandmarker } from "@/lib/cv/poseLandmarker";
 import { createInitialState, processPoseFrame, SixSevenState } from "./logic";
@@ -90,7 +92,7 @@ function SixSevenInner({ stream }: { stream: MediaStream }) {
           title: "6/7 Challenge",
           score: stateRef.current.count,
           subtitle: `${stateRef.current.tempo} reps/sec • ${stateRef.current.bestStreak} best streak`,
-          gameUrl: "https://playzone-omega.vercel.app/play/six-seven",
+          gameUrl: getGameShareUrl("six-seven"),
         }).then(setShareImage);
         return;
       }
@@ -126,7 +128,7 @@ function SixSevenInner({ stream }: { stream: MediaStream }) {
         score={state.count}
         subtitle={`${state.tempo} reps/sec • Best streak: ${state.bestStreak}`}
         shareImage={shareImage}
-        gameUrl="https://playzone-omega.vercel.app/play/six-seven"
+        gameUrl={getGameShareUrl("six-seven")}
         onPlayAgain={reset}
       />
     );

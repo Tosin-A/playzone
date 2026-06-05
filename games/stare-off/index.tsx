@@ -1,5 +1,7 @@
 "use client";
 
+import { getGameShareUrl } from "@/lib/share/url";
+
 import { useState, useCallback, useRef, useEffect } from "react";
 import { getFaceLandmarker } from "@/lib/cv/faceLandmarker";
 import { createInitialState, processFrame, StareOffState, CHARACTERS } from "./logic";
@@ -110,7 +112,7 @@ function StareOffInner({ stream }: { stream: MediaStream }) {
           title: "Stare Off",
           score: `${seconds}s`,
           subtitle,
-          gameUrl: "https://playzone-omega.vercel.app/play/stare-off",
+          gameUrl: getGameShareUrl("stare-off"),
         }).then(setShareImage);
         return;
       }
@@ -143,7 +145,7 @@ function StareOffInner({ stream }: { stream: MediaStream }) {
         numericScore={state.survivalTime / 1000}
         subtitle={subtitle}
         shareImage={shareImage}
-        gameUrl="https://playzone-omega.vercel.app/play/stare-off"
+        gameUrl={getGameShareUrl("stare-off")}
         onPlayAgain={reset}
       />
     );

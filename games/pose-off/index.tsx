@@ -1,5 +1,7 @@
 "use client";
 
+import { getGameShareUrl } from "@/lib/share/url";
+
 import { useState, useCallback, useRef, useEffect } from "react";
 import { getPoseLandmarker } from "@/lib/cv/poseLandmarker";
 import { createInitialState, checkPoseMatch, getCurrentTargetPose, PoseOffState } from "./logic";
@@ -109,7 +111,7 @@ function PoseOffInner({ stream }: { stream: MediaStream }) {
           title: "Pose-Off",
           score: `${totalSec}s`,
           subtitle: `${newState.posesCompleted} poses matched`,
-          gameUrl: "https://playzone-omega.vercel.app/play/pose-off",
+          gameUrl: getGameShareUrl("pose-off"),
         }).then(setShareImage);
         return;
       }
@@ -143,7 +145,7 @@ function PoseOffInner({ stream }: { stream: MediaStream }) {
         higherIsBetter={false}
         subtitle={`${state.posesCompleted} poses in ${totalSec} seconds`}
         shareImage={shareImage}
-        gameUrl="https://playzone-omega.vercel.app/play/pose-off"
+        gameUrl={getGameShareUrl("pose-off")}
         onPlayAgain={reset}
       />
     );

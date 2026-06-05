@@ -1,5 +1,7 @@
 "use client";
 
+import { getGameShareUrl } from "@/lib/share/url";
+
 import { useState, useCallback, useRef, useEffect } from "react";
 import { getPoseLandmarker } from "@/lib/cv/poseLandmarker";
 import { createInitialState, processInput, gameStep, getScore, SubwayRunState } from "./logic";
@@ -95,7 +97,7 @@ function SubwayRunInner({ stream }: { stream: MediaStream }) {
           title: "Subway Run",
           score,
           subtitle: `Ran ${score}m before wiping out`,
-          gameUrl: "https://playzone-omega.vercel.app/play/subway-run",
+          gameUrl: getGameShareUrl("subway-run"),
         }).then(setShareImage);
         return;
       }
@@ -126,7 +128,7 @@ function SubwayRunInner({ stream }: { stream: MediaStream }) {
         score={`${score}m`}
         subtitle="Wipeout!"
         shareImage={shareImage}
-        gameUrl="https://playzone-omega.vercel.app/play/subway-run"
+        gameUrl={getGameShareUrl("subway-run")}
         onPlayAgain={reset}
       />
     );
