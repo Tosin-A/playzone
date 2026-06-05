@@ -90,21 +90,22 @@ export const GAMES: GameMeta[] = [
     },
   },
   {
-    slug: "dont-smile",
-    title: "Don't Smile",
-    description: "Keep a straight face while we try to break you",
-    // Bright yellow→orange: comedy, mischief, sunshine energy
-    gradient: "from-yellow-300 to-orange-500",
+    slug: "push-up",
+    title: "Push-Up Test",
+    description: "How many push-ups can you do in 30 seconds?",
+    // Fiery red→amber: pure effort, gym lighting
+    gradient: "from-red-500 via-orange-500 to-amber-400",
     available: true,
-    thumbnail: "/games/dont-smile.png",
-    previewFrames: ["Laugh bait", "Blink test", "Composure"],
+    // thumbnail intentionally omitted — gradient renders instead until
+    // /public/games/push-up.png is added.
+    previewFrames: ["Down", "Lock out", "Counter"],
     immersive: {
-      subtitle: "Poker Face Gauntlet",
-      setting: "Comedy club meets chaos carnival",
-      mission: "Stay stone-faced while absurd attacks try to break your focus.",
-      signatureMove: "Deadpan Shield",
-      aura: "oklch(0.84 0.22 80)",
-      kanji: "忍",
+      subtitle: "30-Second Burn",
+      setting: "Empty gym at 5am with a single floor light",
+      mission: "Drop chest, lock arms back out, count clean reps for 30 seconds.",
+      signatureMove: "Pump Streak Multiplier",
+      aura: "oklch(0.74 0.21 38)",
+      kanji: "押",
     },
   },
   {
@@ -144,40 +145,6 @@ export const GAMES: GameMeta[] = [
     },
   },
   {
-    slug: "freeze",
-    title: "Freeze",
-    description: "Musical statues — AI catches you moving",
-    // Icy cyan→deep blue: cold, stillness, frozen
-    gradient: "from-cyan-300 to-blue-800",
-    available: false,
-    previewFrames: ["Freeze cue", "Motion trap", "Stillness"],
-    immersive: {
-      subtitle: "Cold Frame Chronicle",
-      setting: "Icy metro tunnel with strobe alarms",
-      mission: "Become absolutely still when the freeze siren snaps on.",
-      signatureMove: "Zero-Motion Domain",
-      aura: "oklch(0.74 0.15 230)",
-      kanji: "凍",
-    },
-  },
-  {
-    slug: "air-drums",
-    title: "Air Drums",
-    description: "Play a drum kit in thin air",
-    // Amber→deep red: warm percussion, stage lights
-    gradient: "from-amber-400 to-red-700",
-    available: false,
-    previewFrames: ["Snare swing", "Kick hit", "Crowd meter"],
-    immersive: {
-      subtitle: "Rhythm Riot Arc",
-      setting: "Packed live stage with molten spotlights",
-      mission: "Air-drum clean patterns and ignite the crowd heat bar.",
-      signatureMove: "Thunder Fill Break",
-      aura: "oklch(0.72 0.20 38)",
-      kanji: "鼓",
-    },
-  },
-  {
     slug: "stare-off",
     title: "Stare Off",
     description: "Hold eye contact as long as you can",
@@ -193,40 +160,6 @@ export const GAMES: GameMeta[] = [
       signatureMove: "Void Stare Crush",
       aura: "oklch(0.63 0.16 285)",
       kanji: "眼",
-    },
-  },
-  {
-    slug: "posture",
-    title: "Posture Police",
-    description: "Get roasted every time you slouch",
-    // Emerald→teal: health, authority, crisp
-    gradient: "from-emerald-400 to-teal-700",
-    available: false,
-    previewFrames: ["Spine check", "Slouch alarm", "Reset"],
-    immersive: {
-      subtitle: "Form Guardian Program",
-      setting: "Cyber clinic with strict AI instructors",
-      mission: "Maintain perfect posture and survive the roast detector.",
-      signatureMove: "Iron Spine Lock",
-      aura: "oklch(0.74 0.16 170)",
-      kanji: "勢",
-    },
-  },
-  {
-    slug: "subway-run",
-    title: "Subway Run",
-    description: "Endless runner controlled by your body",
-    // Lime→green: speed, city, go
-    gradient: "from-lime-300 to-emerald-600",
-    available: false,
-    previewFrames: ["Jump lane", "Duck lane", "Dash chain"],
-    immersive: {
-      subtitle: "Metro Velocity Run",
-      setting: "Endless neon rails above sleeping districts",
-      mission: "Use your body to dodge hazards and keep speed maxed.",
-      signatureMove: "Phantom Rail Sprint",
-      aura: "oklch(0.76 0.19 145)",
-      kanji: "走",
     },
   },
 ];

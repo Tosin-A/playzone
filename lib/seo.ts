@@ -19,6 +19,12 @@ const GAME_SEO: Record<
       "Free webcam game: hold eye contact, land your best expressions, and let AI score your rizz from 0 to 100. No download, plays in your browser.",
     keywords: ["rizz game", "rizz rater", "ai rizz score", "webcam game", "browser game", "charisma test"],
   },
+  "push-up": {
+    title: "Push-Up Test — Count clean reps in 30 seconds",
+    description:
+      "Drop, lock out, beat the clock. Webcam push-up counter — your camera counts reps, no signup, plays in your browser.",
+    keywords: ["push up game", "push up counter", "webcam push ups", "30 second push up test", "pose detection workout"],
+  },
   "six-seven": {
     title: "6/7 — The viral arm-speed challenge",
     description:

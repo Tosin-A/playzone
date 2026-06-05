@@ -22,6 +22,7 @@ const PALETTE: Record<string, { from: string; to: string; accent: string }> = {
   mirror:         { from: "#e879f9", to: "#6d28d9", accent: "#ff8a3d" },
   "stare-off":    { from: "#475569", to: "#4c1d95", accent: "#ff8a3d" },
   "subway-run":   { from: "#bef264", to: "#059669", accent: "#ff8a3d" },
+  "push-up":      { from: "#ef4444", to: "#f59e0b", accent: "#ff8a3d" },
 };
 
 export default async function OG({ params }: { params: { slug: string } }) {
