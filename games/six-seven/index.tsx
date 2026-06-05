@@ -9,6 +9,7 @@ import GameShell from "@/components/shell/GameShell";
 import CameraViewport from "@/components/shell/CameraViewport";
 import ShareScreen from "@/components/shell/ShareScreen";
 import { generateShareCard } from "@/lib/recording/shareCard";
+import { useGameplayRecorder, type DrawOverlay } from "@/lib/recording/useGameplayRecorder";
 import { useCamera } from "@/lib/CameraProvider";
 import { motion } from "framer-motion";
 import OnlineGameWrapper from "@/components/shell/OnlineGameWrapper";
@@ -71,6 +72,42 @@ function SixSevenInner({ stream }: { stream: MediaStream }) {
     videoRef.current = video;
   }, []);
 
+  // Bake the score, timer, and game label onto the recording canvas so
+  // the captured clip is self-explanatory without the React HUD.
+  const drawRecOverlay = useCallback<DrawOverlay>((ctx, w, h, elapsed) => {
+    const remaining = Math.max(0, Math.ceil((GAME_DURATION - elapsed) / 1000));
+    ctx.save();
+    ctx.font = `bold ${Math.round(h * 0.06)}px 'Helvetica Neue', Arial, sans-serif`;
+    ctx.textBaseline = "top";
+    // Timer pill
+    ctx.fillStyle = "rgba(0,0,0,0.55)";
+    const pillPad = h * 0.012;
+    const timerText = `${remaining}s`;
+    const timerW = ctx.measureText(timerText).width + pillPad * 2;
+    ctx.fillRect(h * 0.025, h * 0.025, timerW, h * 0.075);
+    ctx.fillStyle = "#f4f1ec";
+    ctx.fillText(timerText, h * 0.025 + pillPad, h * 0.035);
+    // Big score, centred-bottom
+    const count = stateRef.current.count;
+    ctx.font = `900 ${Math.round(h * 0.18)}px 'Helvetica Neue', Arial, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.fillStyle = "rgba(0,0,0,0.45)";
+    ctx.fillText(String(count), w / 2 + 4, h * 0.7 + 4);
+    ctx.fillStyle = "#ff8a3d";
+    ctx.fillText(String(count), w / 2, h * 0.7);
+    // Brand tag, top-right
+    ctx.font = `600 ${Math.round(h * 0.028)}px 'Helvetica Neue', Arial, sans-serif`;
+    ctx.textAlign = "right";
+    ctx.fillStyle = "rgba(244,241,236,0.65)";
+    ctx.fillText("PlayZone · 6/7", w - h * 0.025, h * 0.035);
+    ctx.restore();
+  }, []);
+
+  const recorder = useGameplayRecorder({
+    videoRef,
+    drawOverlay: drawRecOverlay,
+  });
+
   const startGame = useCallback(async () => {
     setModelLoading(true);
     await getPoseLandmarker();
@@ -90,6 +127,9 @@ function SixSevenInner({ stream }: { stream: MediaStream }) {
     setState(initial);
     stateRef.current = initial;
     startTimeRef.current = performance.now();
+    // Start recording as gameplay begins — best-effort. If the recorder
+    // can't start (unsupported browser, no video yet), the game still runs.
+    recorder.start();
 
     const landmarker = await getPoseLandmarker();
 
@@ -102,6 +142,7 @@ function SixSevenInner({ stream }: { stream: MediaStream }) {
 
       if (elapsed >= GAME_DURATION) {
         setPhase("result");
+        recorder.stop();
         generateShareCard({
           title: "6/7 Challenge",
           score: stateRef.current.count,
@@ -127,7 +168,7 @@ function SixSevenInner({ stream }: { stream: MediaStream }) {
     };
 
     animFrameRef.current = requestAnimationFrame(runFrame);
-  }, []);
+  }, [recorder]);
 
   useEffect(() => {
     return () => {
@@ -151,6 +192,8 @@ function SixSevenInner({ stream }: { stream: MediaStream }) {
         shareImage={shareImage}
         gameUrl={getGameShareUrl("six-seven")}
         onPlayAgain={reset}
+        videoBlob={recorder.blob}
+        videoExt={recorder.mimeExt}
       />
     );
   }

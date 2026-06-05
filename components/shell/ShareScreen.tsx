@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { submitScore, getPlayerRank } from "@/lib/leaderboard";
 import { useCamera } from "@/lib/CameraProvider";
+import { uploadClip } from "@/lib/recording/uploadClip";
 import EntryModal from "./EntryModal";
 
 interface ShareScreenProps {
@@ -17,6 +18,10 @@ interface ShareScreenProps {
   numericScore?: number;
   /** Defaults to true. Set false for "lower is better" games (e.g. Pose-Off) */
   higherIsBetter?: boolean;
+  /** Recorded gameplay clip — composite of camera + HUD captured by the game. */
+  videoBlob?: Blob | null;
+  /** File extension that matches videoBlob's actual MIME ("mp4" | "webm"). */
+  videoExt?: "mp4" | "webm";
 }
 
 export default function ShareScreen({
@@ -27,6 +32,8 @@ export default function ShareScreen({
   onPlayAgain,
   numericScore,
   higherIsBetter = true,
+  videoBlob,
+  videoExt = "mp4",
 }: ShareScreenProps) {
   // Parse game slug from URL
   const gameSlug = gameUrl.split("/play/").pop()?.split("?")[0] ?? "";
@@ -59,16 +66,27 @@ export default function ShareScreen({
   // The card is the share artifact. Render it on screen so the user
   // can long-press to save (mobile pattern), see what they're about
   // to share, and screenshot the visual — not just the page chrome.
-  const [shareImageUrl, setShareImageUrl] = useState<string | null>(null);
+  const shareImageUrl = useMemo(
+    () => (shareImage ? URL.createObjectURL(shareImage) : null),
+    [shareImage],
+  );
   useEffect(() => {
-    if (!shareImage) {
-      setShareImageUrl(null);
-      return;
-    }
-    const url = URL.createObjectURL(shareImage);
-    setShareImageUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [shareImage]);
+    if (!shareImageUrl) return;
+    return () => URL.revokeObjectURL(shareImageUrl);
+  }, [shareImageUrl]);
+
+  // ── Gameplay clip preview URL ──────────────────────────────
+  const videoUrl = useMemo(
+    () => (videoBlob ? URL.createObjectURL(videoBlob) : null),
+    [videoBlob],
+  );
+  useEffect(() => {
+    if (!videoUrl) return;
+    return () => URL.revokeObjectURL(videoUrl);
+  }, [videoUrl]);
+
+  // ── Consent upload state ──────────────────────────────────
+  const [uploadState, setUploadState] = useState<"idle" | "uploading" | "done" | "error">("idle");
 
   // ── Leaderboard state ──────────────────────────────────────
   const [name, setName] = useState("");
@@ -131,6 +149,54 @@ export default function ShareScreen({
     URL.revokeObjectURL(url);
   }, [shareImage]);
 
+  const handleDownloadClip = useCallback(() => {
+    if (!videoBlob) return;
+    const url = URL.createObjectURL(videoBlob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `playzone-${gameSlug || "clip"}.${videoExt}`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [videoBlob, videoExt, gameSlug]);
+
+  const handleShareClip = useCallback(async () => {
+    if (!videoBlob) return;
+    const mime = videoExt === "mp4" ? "video/mp4" : "video/webm";
+    const file = new File([videoBlob], `playzone-${gameSlug}.${videoExt}`, { type: mime });
+    const shareData: ShareData = {
+      title: "PlayZone",
+      text: `My ${score} run on PlayZone — can you beat me?`,
+      url: gameUrl,
+    };
+    if (navigator.canShare?.({ files: [file] })) {
+      shareData.files = [file];
+    }
+    if (navigator.share) {
+      try { await navigator.share(shareData); } catch { /* cancelled */ }
+    }
+  }, [videoBlob, videoExt, gameSlug, score, gameUrl]);
+
+  // Consent upload — only ever called from an explicit button click that
+  // sits behind a clear "share with PlayZone" label.
+  const handleConsentUpload = useCallback(async () => {
+    if (!videoBlob || uploadState === "uploading") return;
+    setUploadState("uploading");
+    try {
+      await uploadClip({
+        blob: videoBlob,
+        gameSlug,
+        ext: videoExt,
+        playerName: name.trim() || undefined,
+        score: leaderboardScore ?? undefined,
+        scoreDisplay: typeof score === "string" ? score : String(score),
+        faceShown: privacyMode === "normal",
+      });
+      setUploadState("done");
+    } catch {
+      setUploadState("error");
+    }
+  }, [videoBlob, videoExt, gameSlug, name, leaderboardScore, score, privacyMode, uploadState]);
+
   const rankLabel =
     rank === 1 ? "🥇 All-time #1!" :
     rank === 2 ? "🥈 All-time #2!" :
@@ -186,6 +252,61 @@ export default function ShareScreen({
             className="block w-full h-auto select-none"
             draggable
           />
+        </motion.div>
+      )}
+
+      {/* Gameplay clip preview + actions */}
+      {videoUrl && (
+        <motion.div
+          initial={{ opacity: 0, y: 16, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.58, ease: [0.16, 1, 0.3, 1] }}
+          className="w-full flex flex-col items-center gap-3"
+        >
+          <div className="w-full max-w-[280px] rounded-2xl overflow-hidden border border-white/10 bg-black shadow-[0_18px_60px_-12px_rgba(255,138,61,0.25)]">
+            <video
+              src={videoUrl}
+              controls
+              playsInline
+              className="block w-full h-auto"
+            />
+          </div>
+          <div className="flex flex-wrap justify-center gap-2">
+            {typeof navigator !== "undefined" && "share" in navigator && (
+              <button
+                onClick={handleShareClip}
+                className="px-4 py-2 bg-accent/90 text-black text-sm font-semibold rounded-xl hover:bg-accent active:scale-[0.97] transition-all"
+              >
+                Share clip
+              </button>
+            )}
+            <button
+              onClick={handleDownloadClip}
+              className="px-4 py-2 bg-white/10 text-sm font-medium rounded-xl hover:bg-white/15 active:scale-[0.97] transition-all"
+            >
+              Download clip
+            </button>
+          </div>
+
+          {/* Consent-gated upload to PlayZone. Off by default — user must
+              explicitly tap to share the clip with us. */}
+          {uploadState === "done" ? (
+            <p className="text-xs text-emerald-400/90">
+              Thanks — your clip is with PlayZone.
+            </p>
+          ) : (
+            <button
+              onClick={handleConsentUpload}
+              disabled={uploadState === "uploading"}
+              className="text-[11px] leading-snug text-white/55 hover:text-white/80 underline underline-offset-2 disabled:opacity-50 max-w-[280px] text-center"
+            >
+              {uploadState === "uploading"
+                ? "Uploading…"
+                : uploadState === "error"
+                ? "Upload failed — tap to retry"
+                : "Let PlayZone use this clip on socials & in highlights"}
+            </button>
+          )}
         </motion.div>
       )}
 
