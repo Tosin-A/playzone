@@ -180,15 +180,27 @@ function SixSevenInner({ stream }: { stream: MediaStream }) {
 }
 
 function SixSevenOverlay({ state, timeLeft }: { state: SixSevenState; timeLeft: number }) {
+  const qualityHint =
+    state.detectionQuality === "none"
+      ? { label: "No pose detected", color: "bg-red-500/80" }
+      : state.detectionQuality === "head-only"
+      ? { label: "Selfie mode", color: "bg-amber-500/80" }
+      : { label: "Full body", color: "bg-emerald-500/80" };
+
   return (
     <div className="absolute inset-0 flex flex-col justify-between p-4 pointer-events-none">
-      {/* Timer */}
+      {/* Timer + tempo + detection quality */}
       <div className="flex justify-between items-start">
         <div className="bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-xl text-sm font-mono tabular-nums">
           {timeLeft}s
         </div>
-        <div className="bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-xl text-sm">
-          {state.tempo} reps/s
+        <div className="flex flex-col items-end gap-1">
+          <div className="bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-xl text-sm">
+            {state.tempo} reps/s
+          </div>
+          <div className={`${qualityHint.color} text-white text-[10px] font-semibold px-2 py-0.5 rounded-md uppercase tracking-wider`}>
+            {qualityHint.label}
+          </div>
         </div>
       </div>
 
