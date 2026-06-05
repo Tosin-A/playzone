@@ -5,6 +5,22 @@ import { useCamera } from "@/lib/CameraProvider";
 import { getFaceLandmarker } from "@/lib/cv/faceLandmarker";
 import { getPoseLandmarker } from "@/lib/cv/poseLandmarker";
 
+// MediaPipe Pose 33-point skeleton. Face nodes (0–10) intentionally
+// excluded — the face landmarker already covers that region and the
+// pose face dots get noisy when both overlays run together.
+const POSE_CONNECTIONS: readonly [number, number][] = [
+  // Torso
+  [11, 12], [11, 23], [12, 24], [23, 24],
+  // Left arm
+  [11, 13], [13, 15], [15, 17], [15, 19], [15, 21], [17, 19],
+  // Right arm
+  [12, 14], [14, 16], [16, 18], [16, 20], [16, 22], [18, 20],
+  // Left leg
+  [23, 25], [25, 27], [27, 29], [27, 31], [29, 31],
+  // Right leg
+  [24, 26], [26, 28], [28, 30], [28, 32], [30, 32],
+];
+
 interface CameraViewportProps {
   stream: MediaStream;
   overlay?: ReactNode;
@@ -235,8 +251,21 @@ export default function CameraViewport({
       if (poseDetector) {
         try {
           const result = poseDetector.detectForVideo(video, now + 0.05);
-          ctx.fillStyle = "#ff6b35";
           for (const pose of result.landmarks ?? []) {
+            // Limbs first, joints on top so dots cap the line ends.
+            ctx.strokeStyle = "#ff6b35";
+            ctx.lineWidth = 3;
+            ctx.lineCap = "round";
+            for (const [a, b] of POSE_CONNECTIONS) {
+              const p1 = pose[a];
+              const p2 = pose[b];
+              if (!p1 || !p2) continue;
+              ctx.beginPath();
+              ctx.moveTo(p1.x * w, p1.y * h);
+              ctx.lineTo(p2.x * w, p2.y * h);
+              ctx.stroke();
+            }
+            ctx.fillStyle = "#ffd166";
             for (const lm of pose) {
               ctx.beginPath();
               ctx.arc(lm.x * w, lm.y * h, 5, 0, Math.PI * 2);
