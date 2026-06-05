@@ -117,7 +117,15 @@ export const TARGET_POSES: TargetPose[] = [
  * limb is slightly off-frame or the model's confidence wobbles for a
  * single landmark — which is the dominant failure mode on mobile.
  */
-const PASS_RATIO = 0.7;
+const PASS_RATIO = 0.55;
+
+/**
+ * Global leniency knob. We subtract this from every per-condition
+ * threshold during comparison: positive thresholds (must-be-this-far-in-
+ * direction) shrink, negative thresholds (allowed slack in the wrong
+ * direction) grow. One number to dial difficulty up or down later.
+ */
+const RELAX = 0.04;
 
 export interface PoseOffState {
   currentPoseIndex: number;
@@ -172,19 +180,20 @@ export function checkPoseMatch(
     const rel = landmarks[cond.relativeTo];
     if (!lm || !rel) continue;
 
+    const t = cond.threshold - RELAX;
     let met = false;
     switch (cond.direction) {
       case "above":
-        met = rel.y - lm.y > cond.threshold;
+        met = rel.y - lm.y > t;
         break;
       case "below":
-        met = lm.y - rel.y > cond.threshold;
+        met = lm.y - rel.y > t;
         break;
       case "left":
-        met = rel.x - lm.x > cond.threshold;
+        met = rel.x - lm.x > t;
         break;
       case "right":
-        met = lm.x - rel.x > cond.threshold;
+        met = lm.x - rel.x > t;
         break;
     }
     if (met) conditionsMet++;
