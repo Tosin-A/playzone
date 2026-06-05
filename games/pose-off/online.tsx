@@ -95,13 +95,12 @@ export default function PoseOffOnline({ opponentScore, onScoreUpdate, onGameFini
               </div>
 
               <AnimatePresence mode="wait">
-                <motion.div key={currentPose.name} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} className="self-center bg-black/70 backdrop-blur-md rounded-3xl p-6 text-center">
-                  <h2 className="text-2xl font-bold font-[family-name:var(--font-display)] text-accent">{currentPose.name}</h2>
-                  <p className="text-sm text-white/60 mt-1">{currentPose.description}</p>
-                  <div className="mt-4 h-3 bg-white/10 rounded-full overflow-hidden w-48 mx-auto">
+                <motion.div key={currentPose.name} initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }} transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }} className="self-center bg-black/70 backdrop-blur-md rounded-3xl p-4 flex flex-col items-center gap-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={currentPose.image} alt={currentPose.name} className="w-32 h-32 sm:w-40 sm:h-40 object-contain rounded-2xl select-none" draggable={false} />
+                  <div className="h-3 bg-white/10 rounded-full overflow-hidden w-40 sm:w-48">
                     <motion.div className="h-full rounded-full" style={{ backgroundColor: state.matchProgress >= 100 ? "#00ff88" : state.matchProgress > 50 ? "#ffcc00" : "#ff4444" }} animate={{ width: `${state.matchProgress}%` }} transition={{ duration: 0.188 }} />
                   </div>
-                  <p className="text-xs text-white/40 mt-2">{state.matchProgress}% matched</p>
                 </motion.div>
               </AnimatePresence>
 

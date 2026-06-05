@@ -4,6 +4,8 @@ import { PoseLandmarkerResult } from "@mediapipe/tasks-vision";
 export interface TargetPose {
   name: string;
   description: string;
+  /** Path under /public — the orange stickman the player should mimic. */
+  image: string;
   // Key landmarks that must be in specific positions relative to each other
   conditions: PoseCondition[];
 }
@@ -32,6 +34,7 @@ export const TARGET_POSES: TargetPose[] = [
   {
     name: "T-Pose",
     description: "Arms straight out to the sides",
+    image: "/games/poses/t-pose.png",
     conditions: [
       { landmark: LEFT_WRIST, relativeTo: LEFT_SHOULDER, direction: "left", threshold: 0.15 },
       { landmark: RIGHT_WRIST, relativeTo: RIGHT_SHOULDER, direction: "right", threshold: 0.15 },
@@ -42,6 +45,7 @@ export const TARGET_POSES: TargetPose[] = [
   {
     name: "Hands Up",
     description: "Both hands above your head",
+    image: "/games/poses/hands-up.png",
     conditions: [
       { landmark: LEFT_WRIST, relativeTo: NOSE, direction: "above", threshold: 0.08 },
       { landmark: RIGHT_WRIST, relativeTo: NOSE, direction: "above", threshold: 0.08 },
@@ -50,6 +54,7 @@ export const TARGET_POSES: TargetPose[] = [
   {
     name: "Dab Left",
     description: "Dab to the left",
+    image: "/games/poses/dab-left.png",
     conditions: [
       { landmark: LEFT_WRIST, relativeTo: LEFT_SHOULDER, direction: "left", threshold: 0.12 },
       { landmark: RIGHT_ELBOW, relativeTo: RIGHT_SHOULDER, direction: "above", threshold: 0.03 },
@@ -58,6 +63,7 @@ export const TARGET_POSES: TargetPose[] = [
   {
     name: "Squat",
     description: "Bend your knees",
+    image: "/games/poses/squat.png",
     conditions: [
       { landmark: LEFT_HIP, relativeTo: LEFT_KNEE, direction: "above", threshold: -0.05 },
       { landmark: RIGHT_HIP, relativeTo: RIGHT_KNEE, direction: "above", threshold: -0.05 },
@@ -66,6 +72,7 @@ export const TARGET_POSES: TargetPose[] = [
   {
     name: "Right Arm Up",
     description: "Right arm straight up",
+    image: "/games/poses/right-arm-up.jpg",
     conditions: [
       { landmark: RIGHT_WRIST, relativeTo: NOSE, direction: "above", threshold: 0.1 },
       { landmark: LEFT_WRIST, relativeTo: LEFT_HIP, direction: "above", threshold: -0.15 },
@@ -74,6 +81,7 @@ export const TARGET_POSES: TargetPose[] = [
   {
     name: "Left Arm Up",
     description: "Left arm straight up",
+    image: "/games/poses/left-arm-up.png",
     conditions: [
       { landmark: LEFT_WRIST, relativeTo: NOSE, direction: "above", threshold: 0.1 },
       { landmark: RIGHT_WRIST, relativeTo: RIGHT_HIP, direction: "above", threshold: -0.15 },
@@ -82,6 +90,7 @@ export const TARGET_POSES: TargetPose[] = [
   {
     name: "Arms Crossed",
     description: "Cross your arms over your chest",
+    image: "/games/poses/arms-crossed.png",
     conditions: [
       { landmark: LEFT_WRIST, relativeTo: RIGHT_SHOULDER, direction: "right", threshold: -0.05 },
       { landmark: RIGHT_WRIST, relativeTo: LEFT_SHOULDER, direction: "left", threshold: -0.05 },
@@ -90,6 +99,7 @@ export const TARGET_POSES: TargetPose[] = [
   {
     name: "Wide Stance",
     description: "Legs wide, arms on hips",
+    image: "/games/poses/wide-stance.png",
     conditions: [
       { landmark: LEFT_WRIST, relativeTo: LEFT_HIP, direction: "above", threshold: -0.08 },
       { landmark: RIGHT_WRIST, relativeTo: RIGHT_HIP, direction: "above", threshold: -0.08 },
