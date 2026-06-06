@@ -1,7 +1,7 @@
 import type { GameMeta } from "./games";
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https://playzone.live";
+  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https://play67.co.uk";
 
 /**
  * Long-form SEO copy per game.

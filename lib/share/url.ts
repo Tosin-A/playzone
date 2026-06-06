@@ -7,7 +7,7 @@
  *   3. Hardcoded fallback (build-time / SSR safety)
  */
 
-const FALLBACK = "https://playzone.live";
+const FALLBACK = "https://play67.co.uk";
 
 export function getSiteOrigin(): string {
   const envOrigin = process.env.NEXT_PUBLIC_SITE_URL;

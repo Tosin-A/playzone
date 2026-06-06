@@ -81,7 +81,7 @@ export default async function OG() {
           }}
         >
           <div>Ten games · One webcam · No download</div>
-          <div style={{ color: "#ff8a3d" }}>playzone.live</div>
+          <div style={{ color: "#ff8a3d" }}>play67.co.uk</div>
         </div>
       </div>
     ),

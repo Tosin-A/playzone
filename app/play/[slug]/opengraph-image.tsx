@@ -154,7 +154,7 @@ export default async function OG({ params }: { params: { slug: string } }) {
               color: "#ffffff",
             }}
           >
-            playzone.live
+            play67.co.uk
           </div>
         </div>
       </div>
