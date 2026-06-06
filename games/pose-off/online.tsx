@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { getPoseLandmarker } from "@/lib/cv/poseLandmarker";
-import { createInitialState, checkPoseMatch, getCurrentTargetPose, PoseOffState } from "./logic";
+import { createInitialState, checkPoseMatch, finishRound, getCurrentTargetPose, GAME_DURATION_MS, PoseOffState } from "./logic";
 import CameraViewport from "@/components/shell/CameraViewport";
 import { useCamera } from "@/lib/CameraProvider";
 import { motion, AnimatePresence } from "framer-motion";
@@ -36,33 +36,36 @@ export default function PoseOffOnline({ opponentScore, onScoreUpdate, onGameFini
     (async () => {
       const landmarker = await getPoseLandmarker();
       const now = performance.now();
-      const initial = createInitialState(6);
+      const initial = createInitialState();
       initial.startTime = now;
       initial.poseStartTime = now;
       stateRef.current = initial;
 
       const runFrame = () => {
         const now = performance.now();
-        setElapsed(now - stateRef.current.startTime);
+        const elapsedMs = now - stateRef.current.startTime;
+        setElapsed(elapsedMs);
+
+        if (elapsedMs >= GAME_DURATION_MS) {
+          const finalState = finishRound(stateRef.current, now);
+          stateRef.current = finalState;
+          setState(finalState);
+          onScoreUpdate(finalState.posesCompleted);
+          onGameFinished(finalState.posesCompleted);
+          return;
+        }
 
         const video = videoRef.current;
-        let newState = stateRef.current;
         if (video && video.videoWidth > 0) {
           try {
             const poseResult = landmarker.detectForVideo(video, now);
-            newState = checkPoseMatch(poseResult, stateRef.current, now);
+            const newState = checkPoseMatch(poseResult, stateRef.current, now);
             stateRef.current = newState;
             setState(newState);
             onScoreUpdate(newState.posesCompleted);
           } catch {
             /* skip frame */
           }
-        }
-
-        if (newState.finished) {
-          const totalSec = Math.round(newState.totalTime / 100) / 10;
-          onGameFinished(totalSec);
-          return;
         }
 
         animFrameRef.current = requestAnimationFrame(runFrame);
@@ -86,29 +89,35 @@ export default function PoseOffOnline({ opponentScore, onScoreUpdate, onGameFini
         overlay={
           currentPose ? (
             <div className="absolute inset-0 flex flex-col justify-between p-4 pointer-events-none">
-              <div className="flex justify-between items-start">
-                <div className="bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-xl text-sm font-mono tabular-nums">{(elapsed / 1000).toFixed(1)}s</div>
-                <div className="flex gap-2">
-                  <div className="bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-xl text-sm">You: {state.posesCompleted}/{state.totalPoses}</div>
-                  <div className="bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-xl text-sm text-red-400">VS: {opponentScore}/{state.totalPoses}</div>
-                </div>
-              </div>
+              {(() => {
+                const timeLeftMs = Math.max(0, GAME_DURATION_MS - elapsed);
+                const secondsLeft = Math.ceil(timeLeftMs / 1000);
+                return (
+                  <>
+                    <div className="flex justify-between items-start">
+                      <div className={`bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-xl text-sm font-mono tabular-nums ${secondsLeft <= 3 ? "text-red-400" : ""}`}>{secondsLeft}s</div>
+                      <div className="flex gap-2">
+                        <div className="bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-xl text-sm">You: {state.posesCompleted}</div>
+                        <div className="bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-xl text-sm text-red-400">VS: {opponentScore}</div>
+                      </div>
+                    </div>
 
-              <AnimatePresence mode="wait">
-                <motion.div key={currentPose.name} initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }} transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }} className="self-center bg-black/70 backdrop-blur-md rounded-3xl p-4 flex flex-col items-center gap-3">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={currentPose.image} alt={currentPose.name} className="w-32 h-32 sm:w-40 sm:h-40 object-contain rounded-2xl select-none" draggable={false} />
-                  <div className="h-3 bg-white/10 rounded-full overflow-hidden w-40 sm:w-48">
-                    <motion.div className="h-full rounded-full" style={{ backgroundColor: state.matchProgress >= 100 ? "#00ff88" : state.matchProgress > 50 ? "#ffcc00" : "#ff4444" }} animate={{ width: `${state.matchProgress}%` }} transition={{ duration: 0.188 }} />
-                  </div>
-                </motion.div>
-              </AnimatePresence>
+                    <AnimatePresence mode="wait">
+                      <motion.div key={currentPose.name} initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }} transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }} className="self-center bg-black/70 backdrop-blur-md rounded-3xl p-4 flex flex-col items-center gap-3">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={currentPose.image} alt={currentPose.name} className="w-32 h-32 sm:w-40 sm:h-40 object-contain rounded-2xl select-none" draggable={false} />
+                        <div className="h-3 bg-white/10 rounded-full overflow-hidden w-40 sm:w-48">
+                          <motion.div className="h-full rounded-full" style={{ backgroundColor: state.matchProgress >= 100 ? "#00ff88" : state.matchProgress > 50 ? "#ffcc00" : "#ff4444" }} animate={{ width: `${state.matchProgress}%` }} transition={{ duration: 0.188 }} />
+                        </div>
+                      </motion.div>
+                    </AnimatePresence>
 
-              <div className="flex justify-center gap-2">
-                {Array.from({ length: state.totalPoses }).map((_, i) => (
-                  <div key={i} className={`w-3 h-3 rounded-full transition-colors ${i < state.posesCompleted ? "bg-accent" : i === state.posesCompleted ? "bg-white/50 animate-pulse" : "bg-white/20"}`} />
-                ))}
-              </div>
+                    <div className="w-full max-w-[420px] self-center h-1.5 bg-white/10 rounded-full overflow-hidden">
+                      <div className="h-full bg-accent" style={{ width: `${Math.max(0, Math.min(100, (timeLeftMs / GAME_DURATION_MS) * 100))}%` }} />
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           ) : undefined
         }

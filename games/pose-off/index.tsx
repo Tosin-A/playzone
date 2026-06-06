@@ -4,7 +4,7 @@ import { getGameShareUrl } from "@/lib/share/url";
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { getPoseLandmarker } from "@/lib/cv/poseLandmarker";
-import { createInitialState, checkPoseMatch, getCurrentTargetPose, PoseOffState } from "./logic";
+import { createInitialState, checkPoseMatch, finishRound, getCurrentTargetPose, GAME_DURATION_MS, PoseOffState } from "./logic";
 import GameShell from "@/components/shell/GameShell";
 import CameraViewport from "@/components/shell/CameraViewport";
 import ShareScreen from "@/components/shell/ShareScreen";
@@ -22,7 +22,7 @@ export default function PoseOffGame() {
 
   if (status === "denied" || !stream) {
     return (
-      <GameShell title="Pose-Off" howToPlay="Match the poses on screen as fast as you can! The faster you match all poses, the better your score.">
+      <GameShell title="Pose-Off" howToPlay="Match as many poses as you can in 15 seconds. Each pose you hit cycles you to the next — score is how many you nail before time's up.">
         <div className="flex items-center justify-center min-h-[60vh]">
           {status === "denied" ? (
             <p className="text-red-400">Camera access required.</p>
@@ -35,12 +35,10 @@ export default function PoseOffGame() {
   }
 
   return (
-    <GameShell title="Pose-Off" howToPlay="Match the poses shown on screen as fast as possible. Complete all 6 poses in the fastest time to win!">
+    <GameShell title="Pose-Off" howToPlay="Match as many poses as you can in 15 seconds. Each pose you hit cycles you to the next — score is how many you nail before time's up.">
       <OnlineGameWrapper
         gameSlug="pose-off"
         gameName="Pose-Off"
-        unit="s"
-        lowerIsBetter
         renderSoloGame={() => <PoseOffInner stream={stream} />}
       >
         {(props) => (
@@ -85,7 +83,7 @@ function PoseOffInner({ stream }: { stream: MediaStream }) {
     }
 
     setPhase("playing");
-    const initial = createInitialState(6);
+    const initial = createInitialState();
     const now = performance.now();
     initial.startTime = now;
     initial.poseStartTime = now;
@@ -96,31 +94,35 @@ function PoseOffInner({ stream }: { stream: MediaStream }) {
 
     const runFrame = () => {
       const now = performance.now();
-      setElapsed(now - stateRef.current.startTime);
+      const elapsedMs = now - stateRef.current.startTime;
+      setElapsed(elapsedMs);
+
+      // Timer's up — finish on the next frame regardless of CV state so the
+      // round always lasts exactly the configured duration.
+      if (elapsedMs >= GAME_DURATION_MS) {
+        const finalState = finishRound(stateRef.current, now);
+        stateRef.current = finalState;
+        setState(finalState);
+        setPhase("result");
+        generateShareCard({
+          title: "Pose-Off",
+          score: finalState.posesCompleted,
+          subtitle: `${finalState.posesCompleted} poses in 15 seconds`,
+          gameUrl: getGameShareUrl("pose-off"),
+        }).then(setShareImage);
+        return;
+      }
 
       const video = videoRef.current;
-      let newState = stateRef.current;
       if (video && video.videoWidth > 0) {
         try {
           const poseResult = landmarker.detectForVideo(video, now);
-          newState = checkPoseMatch(poseResult, stateRef.current, now);
+          const newState = checkPoseMatch(poseResult, stateRef.current, now);
           stateRef.current = newState;
           setState(newState);
         } catch {
           /* skip frame */
         }
-      }
-
-      if (newState.finished) {
-        setPhase("result");
-        const totalSec = (newState.totalTime / 1000).toFixed(1);
-        generateShareCard({
-          title: "Pose-Off",
-          score: `${totalSec}s`,
-          subtitle: `${newState.posesCompleted} poses matched`,
-          gameUrl: getGameShareUrl("pose-off"),
-        }).then(setShareImage);
-        return;
       }
 
       animFrameRef.current = requestAnimationFrame(runFrame);
@@ -142,13 +144,10 @@ function PoseOffInner({ stream }: { stream: MediaStream }) {
   }, []);
 
   if (phase === "result") {
-    const totalSec = (state.totalTime / 1000).toFixed(1);
     return (
       <ShareScreen
-        score={`${totalSec}s`}
-        numericScore={state.totalTime / 1000}
-        higherIsBetter={false}
-        subtitle={`${state.posesCompleted} poses in ${totalSec} seconds`}
+        score={state.posesCompleted}
+        subtitle={`${state.posesCompleted} ${state.posesCompleted === 1 ? "pose" : "poses"} in 15 seconds`}
         shareImage={shareImage}
         gameUrl={getGameShareUrl("pose-off")}
         onPlayAgain={reset}
@@ -170,8 +169,7 @@ function PoseOffInner({ stream }: { stream: MediaStream }) {
               poseImage={currentPose.image}
               matchProgress={state.matchProgress}
               posesCompleted={state.posesCompleted}
-              totalPoses={state.totalPoses}
-              elapsed={elapsed}
+              timeLeftMs={Math.max(0, GAME_DURATION_MS - elapsed)}
             />
           ) : phase === "countdown" ? (
             <div className="absolute inset-0 flex items-center justify-center">
@@ -209,25 +207,24 @@ function PoseOffOverlay({
   poseImage,
   matchProgress,
   posesCompleted,
-  totalPoses,
-  elapsed,
+  timeLeftMs,
 }: {
   poseName: string;
   poseImage: string;
   matchProgress: number;
   posesCompleted: number;
-  totalPoses: number;
-  elapsed: number;
+  timeLeftMs: number;
 }) {
+  const secondsLeft = Math.ceil(timeLeftMs / 1000);
   return (
     <div className="absolute inset-0 flex flex-col justify-between p-4 pointer-events-none">
-      {/* Top: timer and progress */}
+      {/* Top: countdown + pose tally */}
       <div className="flex justify-between items-start">
-        <div className="bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-xl text-sm font-mono tabular-nums">
-          {(elapsed / 1000).toFixed(1)}s
+        <div className={`bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-xl text-sm font-mono tabular-nums ${secondsLeft <= 3 ? "text-red-400" : ""}`}>
+          {secondsLeft}s
         </div>
         <div className="bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-xl text-sm">
-          {posesCompleted}/{totalPoses}
+          {posesCompleted} {posesCompleted === 1 ? "pose" : "poses"}
         </div>
       </div>
 
@@ -265,16 +262,13 @@ function PoseOffOverlay({
         </motion.div>
       </AnimatePresence>
 
-      {/* Bottom: pose dots */}
-      <div className="flex justify-center gap-2">
-        {Array.from({ length: totalPoses }).map((_, i) => (
-          <div
-            key={i}
-            className={`w-3 h-3 rounded-full transition-colors ${
-              i < posesCompleted ? "bg-accent" : i === posesCompleted ? "bg-white/50 animate-pulse" : "bg-white/20"
-            }`}
-          />
-        ))}
+      {/* Bottom: round timer bar — drains over the 15s window so the
+          player can feel the clock without staring at the corner pill. */}
+      <div className="w-full max-w-[420px] self-center h-1.5 bg-white/10 rounded-full overflow-hidden">
+        <div
+          className="h-full bg-accent"
+          style={{ width: `${Math.max(0, Math.min(100, (timeLeftMs / 15000) * 100))}%` }}
+        />
       </div>
     </div>
   );

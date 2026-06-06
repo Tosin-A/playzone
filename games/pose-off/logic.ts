@@ -8,6 +8,13 @@ export interface TargetPose {
   image: string;
   // Key landmarks that must be in specific positions relative to each other
   conditions: PoseCondition[];
+  /**
+   * Optional per-pose override of the global PASS_RATIO. Useful for poses
+   * that have left/right mirror conditions where only one side is reliable
+   * (e.g. a squat captured side-on: the back leg's landmarks land near the
+   * front leg's and can't both be trusted).
+   */
+  passRatio?: number;
 }
 
 interface PoseCondition {
@@ -21,7 +28,6 @@ interface PoseCondition {
 // MediaPipe landmark indices
 const LEFT_WRIST = 15;
 const RIGHT_WRIST = 16;
-const RIGHT_ELBOW = 14;
 const LEFT_SHOULDER = 11;
 const RIGHT_SHOULDER = 12;
 const LEFT_HIP = 23;
@@ -39,9 +45,13 @@ export const TARGET_POSES: TargetPose[] = [
     name: "T-Pose",
     description: "Arms straight out to the sides",
     image: "/games/poses/t-pose.png",
+    // MediaPipe sees the un-mirrored frame, and LEFT_* are anatomical-left
+    // landmarks — so the anatomical left wrist lives on the image's RIGHT
+    // (high x) when extended sideways. The directional check has to mirror
+    // that, not the user's on-screen view.
     conditions: [
-      { landmark: LEFT_WRIST, relativeTo: LEFT_SHOULDER, direction: "left", threshold: 0.08 },
-      { landmark: RIGHT_WRIST, relativeTo: RIGHT_SHOULDER, direction: "right", threshold: 0.08 },
+      { landmark: LEFT_WRIST, relativeTo: LEFT_SHOULDER, direction: "right", threshold: 0.08 },
+      { landmark: RIGHT_WRIST, relativeTo: RIGHT_SHOULDER, direction: "left", threshold: 0.08 },
       { landmark: LEFT_WRIST, relativeTo: LEFT_SHOULDER, direction: "above", threshold: -0.12 },
       { landmark: RIGHT_WRIST, relativeTo: RIGHT_SHOULDER, direction: "above", threshold: -0.12 },
     ],
@@ -56,22 +66,24 @@ export const TARGET_POSES: TargetPose[] = [
     ],
   },
   {
-    name: "Dab Left",
-    description: "Dab to the left",
-    image: "/games/poses/dab-left.png",
-    conditions: [
-      { landmark: LEFT_WRIST, relativeTo: LEFT_SHOULDER, direction: "left", threshold: 0.06 },
-      { landmark: RIGHT_ELBOW, relativeTo: RIGHT_SHOULDER, direction: "above", threshold: -0.02 },
-    ],
-  },
-  {
     name: "Squat",
     description: "Bend your knees",
     image: "/games/poses/squat.png",
+    // A real squat brings the hip DOWN toward knee height. In screen
+    // coords y grows downward, so the squat predicate is "HIP.y is at or
+    // below KNEE.y - 0.12" — written as HIP "below" KNEE with -0.12 slack
+    // (i.e. HIP.y - KNEE.y > -0.12). The previous "above" form was
+    // satisfied by a standing pose, so the old squat triggered instantly.
+    //
+    // passRatio: 0.5 lets a single leg satisfy the pose. When the player
+    // turns side-on, the back leg's landmarks overlap the front leg's and
+    // their visibility tanks — but the camera-facing leg's hip→knee
+    // relationship still cleanly reflects the squat.
     conditions: [
-      { landmark: LEFT_HIP, relativeTo: LEFT_KNEE, direction: "above", threshold: -0.12 },
-      { landmark: RIGHT_HIP, relativeTo: RIGHT_KNEE, direction: "above", threshold: -0.12 },
+      { landmark: LEFT_HIP, relativeTo: LEFT_KNEE, direction: "below", threshold: -0.12 },
+      { landmark: RIGHT_HIP, relativeTo: RIGHT_KNEE, direction: "below", threshold: -0.12 },
     ],
+    passRatio: 0.5,
   },
   {
     name: "Right Arm Up",
@@ -127,29 +139,32 @@ const PASS_RATIO = 0.55;
  */
 const RELAX = 0.04;
 
+/** Total round length. Pose pool cycles continuously until time's up. */
+export const GAME_DURATION_MS = 15000;
+
 export interface PoseOffState {
   currentPoseIndex: number;
+  /** Score = number of poses matched in the round. Higher is better. */
   posesCompleted: number;
-  totalPoses: number;
+  /** Shuffled order through the pool; loops modulo length on each match. */
   poseOrder: number[];
   matchProgress: number; // 0-100, how close to matching
   startTime: number;
   poseStartTime: number;
   poseTimes: number[]; // time taken per pose in ms
   finished: boolean;
+  /** Total round duration captured at finish — always GAME_DURATION_MS. */
   totalTime: number;
 }
 
-export function createInitialState(numPoses: number = 6): PoseOffState {
-  // Random selection of poses
+export function createInitialState(): PoseOffState {
+  // Shuffle the whole pool so cycling order varies between rounds.
   const shuffled = [...Array(TARGET_POSES.length).keys()]
-    .sort(() => Math.random() - 0.5)
-    .slice(0, numPoses);
+    .sort(() => Math.random() - 0.5);
 
   return {
     currentPoseIndex: 0,
     posesCompleted: 0,
-    totalPoses: numPoses,
     poseOrder: shuffled,
     matchProgress: 0,
     startTime: 0,
@@ -202,28 +217,37 @@ export function checkPoseMatch(
   const progress = Math.round((conditionsMet / currentPose.conditions.length) * 100);
   const newState = { ...state, matchProgress: progress };
 
-  // Pose matched when we hit the pass ratio (default 70% of conditions).
-  // A single flickery landmark shouldn't gate the whole pose.
-  const required = Math.max(1, Math.ceil(currentPose.conditions.length * PASS_RATIO));
+  // Pose matched when we hit the pass ratio. A single flickery landmark
+  // shouldn't gate the whole pose. Per-pose passRatio wins over the
+  // global default — see Squat for why.
+  const ratio = currentPose.passRatio ?? PASS_RATIO;
+  const required = Math.max(1, Math.ceil(currentPose.conditions.length * ratio));
   if (conditionsMet >= required) {
     const poseTime = now - state.poseStartTime;
     newState.poseTimes = [...state.poseTimes, poseTime];
     newState.posesCompleted = state.posesCompleted + 1;
-
-    if (newState.posesCompleted >= state.totalPoses) {
-      newState.finished = true;
-      newState.totalTime = now - state.startTime;
-    } else {
-      newState.currentPoseIndex = state.currentPoseIndex + 1;
-      newState.poseStartTime = now;
-      newState.matchProgress = 0;
-    }
+    // Cycle through the pool — when we hit the end, wrap to the start.
+    // Round only ends when the timer runs out (handled in the game loop).
+    newState.currentPoseIndex = (state.currentPoseIndex + 1) % state.poseOrder.length;
+    newState.poseStartTime = now;
+    newState.matchProgress = 0;
   }
 
   return newState;
 }
 
+/** Force-finish the round — called when the game loop sees time's up. */
+export function finishRound(state: PoseOffState, now: number): PoseOffState {
+  if (state.finished) return state;
+  return {
+    ...state,
+    finished: true,
+    totalTime: now - state.startTime,
+  };
+}
+
 export function getCurrentTargetPose(state: PoseOffState): TargetPose | null {
-  if (state.finished || state.currentPoseIndex >= state.poseOrder.length) return null;
-  return TARGET_POSES[state.poseOrder[state.currentPoseIndex]];
+  if (state.finished) return null;
+  const idx = state.poseOrder[state.currentPoseIndex];
+  return TARGET_POSES[idx] ?? null;
 }
