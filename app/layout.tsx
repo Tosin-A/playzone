@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Teko, Barlow } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const teko = Teko({
@@ -109,6 +110,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(rootJsonLd) }}
         />
         {children}
+        <Analytics />
       </body>
     </html>
   );

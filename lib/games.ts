@@ -74,7 +74,7 @@ export const GAMES: GameMeta[] = [
   {
     slug: "pose-off",
     title: "Pose-Off",
-    description: "Match all poses as fast as possible",
+    description: "Match as many poses as you can in 15 seconds",
     // Vivid violet→deep indigo: stylish, dancer energy
     gradient: "from-violet-400 to-indigo-700",
     available: true,

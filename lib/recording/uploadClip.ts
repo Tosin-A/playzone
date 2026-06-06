@@ -60,7 +60,20 @@ export async function uploadClip(params: UploadClipParams): Promise<UploadedClip
       },
     });
 
-  if (error) throw error;
+  if (error) {
+    // Surface the real cause — most common failures here are "Bucket not
+    // found" (bucket missing) and "new row violates row-level security
+    // policy" (RLS blocks anon insert). Logging the structured error
+    // makes it obvious which one we're hitting.
+    console.error("[uploadClip] Supabase storage upload failed", {
+      bucket: BUCKET,
+      path,
+      blobSize: blob.size,
+      blobType: blob.type,
+      error,
+    });
+    throw error;
+  }
 
   const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
   return { path, publicUrl: data.publicUrl };

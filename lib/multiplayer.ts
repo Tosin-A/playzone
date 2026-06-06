@@ -165,12 +165,17 @@ export class MultiplayerManager {
     }
   }
 
-  // Join a game room for real-time score/state exchange
+  // Join a game room for real-time score/state exchange.
+  // Countdown is intentionally NOT exchanged over the wire — both clients
+  // run their own local 3-2-1 timer. Broadcasts to a not-yet-SUBSCRIBED
+  // channel are silently dropped by Supabase, so depending on a remote
+  // countdown(0) message to flip the non-host into "playing" left users
+  // stuck on the countdown screen when subscribe lagged. Local timers
+  // start at "match found" on both sides; clock drift is well under 100ms.
   joinRoom(
     roomId: string,
     onOpponentUpdate: (data: { score: number; extras?: Record<string, unknown> }) => void,
     onOpponentFinished: (data: { finalScore: number; extras?: Record<string, unknown> }) => void,
-    onCountdown: (count: number) => void
   ): void {
     this.gameChannel = supabase.channel(roomId);
 
@@ -184,9 +189,6 @@ export class MultiplayerManager {
         if (payload.playerId !== this.playerId) {
           onOpponentFinished(payload);
         }
-      })
-      .on("broadcast", { event: "countdown" }, ({ payload }) => {
-        onCountdown(payload.count);
       })
       .subscribe();
   }
@@ -206,15 +208,6 @@ export class MultiplayerManager {
       type: "broadcast",
       event: "game_finished",
       payload: { playerId: this.playerId, finalScore, extras },
-    });
-  }
-
-  // Host sends countdown
-  sendCountdown(count: number) {
-    this.gameChannel?.send({
-      type: "broadcast",
-      event: "countdown",
-      payload: { count },
     });
   }
 

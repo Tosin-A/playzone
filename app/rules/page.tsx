@@ -42,7 +42,7 @@ export default function RulesPage() {
           <section>
             <h2 className="text-base font-semibold text-white mb-2">2. Eligibility</h2>
             <ul className="list-disc pl-5 space-y-1">
-              <li>Open to UK and Republic of Ireland residents aged 18 or over.</li>
+              <li>Open to UK and Republic of Ireland residents aged 13+.</li>
               <li>Employees of the Promoter and their immediate families are excluded.</li>
               <li>One person, one valid email address.</li>
             </ul>

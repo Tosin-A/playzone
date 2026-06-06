@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { submitScore, getPlayerRank } from "@/lib/leaderboard";
 import { useCamera } from "@/lib/CameraProvider";
-import { uploadClip } from "@/lib/recording/uploadClip";
 import EntryModal from "./EntryModal";
 
 interface ShareScreenProps {
@@ -85,9 +84,6 @@ export default function ShareScreen({
     return () => URL.revokeObjectURL(videoUrl);
   }, [videoUrl]);
 
-  // ── Consent upload state ──────────────────────────────────
-  const [uploadState, setUploadState] = useState<"idle" | "uploading" | "done" | "error">("idle");
-
   // ── Leaderboard state ──────────────────────────────────────
   const [name, setName] = useState("");
   const [submitState, setSubmitState] = useState<"idle" | "loading" | "done">("idle");
@@ -159,44 +155,6 @@ export default function ShareScreen({
     URL.revokeObjectURL(url);
   }, [videoBlob, videoExt, gameSlug]);
 
-  const handleShareClip = useCallback(async () => {
-    if (!videoBlob) return;
-    const mime = videoExt === "mp4" ? "video/mp4" : "video/webm";
-    const file = new File([videoBlob], `playzone-${gameSlug}.${videoExt}`, { type: mime });
-    const shareData: ShareData = {
-      title: "PlayZone",
-      text: `My ${score} run on PlayZone — can you beat me?`,
-      url: gameUrl,
-    };
-    if (navigator.canShare?.({ files: [file] })) {
-      shareData.files = [file];
-    }
-    if (navigator.share) {
-      try { await navigator.share(shareData); } catch { /* cancelled */ }
-    }
-  }, [videoBlob, videoExt, gameSlug, score, gameUrl]);
-
-  // Consent upload — only ever called from an explicit button click that
-  // sits behind a clear "share with PlayZone" label.
-  const handleConsentUpload = useCallback(async () => {
-    if (!videoBlob || uploadState === "uploading") return;
-    setUploadState("uploading");
-    try {
-      await uploadClip({
-        blob: videoBlob,
-        gameSlug,
-        ext: videoExt,
-        playerName: name.trim() || undefined,
-        score: leaderboardScore ?? undefined,
-        scoreDisplay: typeof score === "string" ? score : String(score),
-        faceShown: privacyMode === "normal",
-      });
-      setUploadState("done");
-    } catch {
-      setUploadState("error");
-    }
-  }, [videoBlob, videoExt, gameSlug, name, leaderboardScore, score, privacyMode, uploadState]);
-
   const rankLabel =
     rank === 1 ? "🥇 All-time #1!" :
     rank === 2 ? "🥈 All-time #2!" :
@@ -255,13 +213,16 @@ export default function ShareScreen({
         </motion.div>
       )}
 
-      {/* Gameplay clip preview + actions */}
+      {/* Gameplay clip preview. Sharing & opt-in upload are merged into
+          the £30 draw entry below — pressing that button is the single
+          consent moment. A quiet Download fallback stays here so users
+          can grab the raw file even without entering the draw. */}
       {videoUrl && (
         <motion.div
           initial={{ opacity: 0, y: 16, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.6, delay: 0.58, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full flex flex-col items-center gap-3"
+          className="w-full flex flex-col items-center gap-2"
         >
           <div className="w-full max-w-[280px] rounded-2xl overflow-hidden border border-white/10 bg-black shadow-[0_18px_60px_-12px_rgba(255,138,61,0.25)]">
             <video
@@ -271,42 +232,12 @@ export default function ShareScreen({
               className="block w-full h-auto"
             />
           </div>
-          <div className="flex flex-wrap justify-center gap-2">
-            {typeof navigator !== "undefined" && "share" in navigator && (
-              <button
-                onClick={handleShareClip}
-                className="px-4 py-2 bg-accent/90 text-black text-sm font-semibold rounded-xl hover:bg-accent active:scale-[0.97] transition-all"
-              >
-                Share clip
-              </button>
-            )}
-            <button
-              onClick={handleDownloadClip}
-              className="px-4 py-2 bg-white/10 text-sm font-medium rounded-xl hover:bg-white/15 active:scale-[0.97] transition-all"
-            >
-              Download clip
-            </button>
-          </div>
-
-          {/* Consent-gated upload to PlayZone. Off by default — user must
-              explicitly tap to share the clip with us. */}
-          {uploadState === "done" ? (
-            <p className="text-xs text-emerald-400/90">
-              Thanks — your clip is with PlayZone.
-            </p>
-          ) : (
-            <button
-              onClick={handleConsentUpload}
-              disabled={uploadState === "uploading"}
-              className="text-[11px] leading-snug text-white/55 hover:text-white/80 underline underline-offset-2 disabled:opacity-50 max-w-[280px] text-center"
-            >
-              {uploadState === "uploading"
-                ? "Uploading…"
-                : uploadState === "error"
-                ? "Upload failed — tap to retry"
-                : "Let PlayZone use this clip on socials & in highlights"}
-            </button>
-          )}
+          <button
+            onClick={handleDownloadClip}
+            className="text-[11px] text-white/45 hover:text-white/80 underline underline-offset-2"
+          >
+            Download clip
+          </button>
         </motion.div>
       )}
 
@@ -385,7 +316,8 @@ export default function ShareScreen({
         )}
       </motion.div>
 
-      {/* Weekly draw entry */}
+      {/* Weekly draw entry — also the consent moment for the gameplay
+          clip. When a videoBlob is present, label/subcopy reflect both. */}
       <motion.button
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -395,10 +327,12 @@ export default function ShareScreen({
       >
         <span className="flex items-center justify-center gap-2 text-sm font-semibold text-accent">
           <span className="text-base">🎟️</span>
-          Enter the weekly £30 draw
+          {videoBlob ? "Share clip & enter £30 draw" : "Enter the weekly £30 draw"}
         </span>
         <span className="block text-[10px] text-white/40 mt-0.5">
-          Free to enter · Drawn every Monday
+          {videoBlob
+            ? "Free to enter · Your clip goes to PlayZone"
+            : "Free to enter · Drawn every Monday"}
         </span>
       </motion.button>
 
@@ -410,6 +344,9 @@ export default function ShareScreen({
         scoreDisplay={typeof score === "string" ? score : String(score)}
         faceShown={privacyMode === "normal"}
         initialName={name}
+        videoBlob={videoBlob}
+        videoExt={videoExt}
+        gameUrl={gameUrl}
       />
 
       {/* Play again / try another */}

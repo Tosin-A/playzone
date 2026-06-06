@@ -56,39 +56,23 @@ export default function OnlineGameWrapper({
       setOnlinePhase((prev) => prev === "waiting" ? "result" : prev);
     };
 
-    // Host drives the countdown
-    if (result.isHost) {
-      // Host joins room and controls countdown
-      manager.joinRoom(
-        result.roomId,
-        (data) => setOpponentScore(data.score),
-        onOpponentFinished,
-        (count) => setCountdown(count)
-      );
+    // Both sides subscribe to score/finished broadcasts and run their
+    // OWN 3-2-1 countdown. Nothing here depends on a wire message —
+    // clocks across two devices drift well under 100ms, and the 3000ms
+    // local countdown gives the channel subscription plenty of time to
+    // complete before the first score broadcast fires.
+    manager.joinRoom(
+      result.roomId,
+      (data) => setOpponentScore(data.score),
+      onOpponentFinished,
+    );
 
-      setOnlinePhase("countdown");
-      for (let i = 3; i >= 1; i--) {
-        setCountdown(i);
-        manager.sendCountdown(i);
-        await new Promise((r) => setTimeout(r, 1000));
-      }
-      setOnlinePhase("playing");
-      manager.sendCountdown(0);
-    } else {
-      // Non-host joins room and listens for countdown from host
-      setOnlinePhase("countdown");
-      manager.joinRoom(
-        result.roomId,
-        (data) => setOpponentScore(data.score),
-        onOpponentFinished,
-        (count) => {
-          setCountdown(count);
-          if (count === 0) {
-            setOnlinePhase("playing");
-          }
-        }
-      );
+    setOnlinePhase("countdown");
+    for (let i = 3; i >= 1; i--) {
+      setCountdown(i);
+      await new Promise((r) => setTimeout(r, 1000));
     }
+    setOnlinePhase("playing");
   }, []);
 
   const handleScoreUpdate = useCallback((score: number, extras?: Record<string, unknown>) => {

@@ -7,6 +7,7 @@ import {
   submitGiveawayEntry,
   type SocialPlatform,
 } from "@/lib/giveaway";
+import { uploadClip } from "@/lib/recording/uploadClip";
 
 interface EntryModalProps {
   open: boolean;
@@ -16,6 +17,11 @@ interface EntryModalProps {
   scoreDisplay: string;
   faceShown: boolean;
   initialName?: string;
+  /** Gameplay clip captured during the run — uploaded with the entry. */
+  videoBlob?: Blob | null;
+  videoExt?: "mp4" | "webm";
+  /** Game share URL — used by the native share sheet in the "done" state. */
+  gameUrl?: string;
 }
 
 const PLATFORMS: { value: SocialPlatform; label: string }[] = [
@@ -33,6 +39,9 @@ export default function EntryModal({
   scoreDisplay,
   faceShown,
   initialName = "",
+  videoBlob,
+  videoExt = "mp4",
+  gameUrl,
 }: EntryModalProps) {
   const [name, setName] = useState(initialName);
   const [email, setEmail] = useState("");
@@ -70,13 +79,50 @@ export default function EntryModal({
       ageConfirmed: age,
       consentConfirmed: consent,
     });
-    if (res.ok) {
-      setState("done");
-    } else {
+    if (!res.ok) {
       setState("error");
       setError(res.error ?? "Something went wrong.");
+      return;
     }
-  }, [name, email, socialUrl, platform, age, consent, gameSlug, score, scoreDisplay, faceShown]);
+    // The draw entry IS the consent — upload the clip alongside it. We
+    // don't block the success state on the upload because storage hiccups
+    // shouldn't take down a confirmed draw entry. Errors are logged.
+    if (videoBlob) {
+      uploadClip({
+        blob: videoBlob,
+        gameSlug,
+        ext: videoExt,
+        playerName: name,
+        score: score ?? undefined,
+        scoreDisplay,
+        faceShown,
+      }).catch((err) => {
+        console.error("[EntryModal] clip upload failed", err);
+      });
+    }
+    setState("done");
+  }, [
+    name, email, socialUrl, platform, age, consent,
+    gameSlug, score, scoreDisplay, faceShown,
+    videoBlob, videoExt,
+  ]);
+
+  const handleShareClipFromDone = useCallback(async () => {
+    if (!videoBlob || !gameUrl) return;
+    const mime = videoExt === "mp4" ? "video/mp4" : "video/webm";
+    const file = new File([videoBlob], `playzone-${gameSlug}.${videoExt}`, { type: mime });
+    const shareData: ShareData = {
+      title: "PlayZone",
+      text: `My ${scoreDisplay} run on PlayZone — can you beat me?`,
+      url: gameUrl,
+    };
+    if (navigator.canShare?.({ files: [file] })) {
+      shareData.files = [file];
+    }
+    if (navigator.share) {
+      try { await navigator.share(shareData); } catch { /* cancelled */ }
+    }
+  }, [videoBlob, videoExt, gameSlug, scoreDisplay, gameUrl]);
 
   const canSubmit =
     name.trim().length > 0 &&
@@ -119,17 +165,26 @@ export default function EntryModal({
                 <p className="text-white/70 text-sm leading-relaxed">
                   Weekly draw happens every Monday. Winners are emailed within
                   24 hours of the draw.
+                  {videoBlob ? " Your clip is with PlayZone." : ""}
                 </p>
+                {videoBlob && typeof navigator !== "undefined" && "share" in navigator && (
+                  <button
+                    onClick={handleShareClipFromDone}
+                    className="w-full mt-1 py-2.5 bg-accent text-black font-semibold rounded-2xl hover:bg-accent-dim active:scale-[0.97] transition-all"
+                  >
+                    Share your clip
+                  </button>
+                )}
                 {socialUrl ? null : (
                   <p className="text-white/50 text-xs leading-relaxed">
-                    Tip: post your clip on socials with{" "}
+                    Tip: post with{" "}
                     <span className="text-accent">#PlayZone</span> for an extra
                     chance — DM us the link if you forgot.
                   </p>
                 )}
                 <button
                   onClick={onClose}
-                  className="w-full mt-2 py-2.5 bg-accent text-black font-semibold rounded-2xl hover:bg-accent-dim active:scale-[0.97] transition-all"
+                  className="w-full py-2.5 bg-white/10 text-white font-medium rounded-2xl hover:bg-white/15 active:scale-[0.97] transition-all"
                 >
                   Done
                 </button>
@@ -142,10 +197,12 @@ export default function EntryModal({
                       id="entry-modal-title"
                       className="text-xl font-bold font-[family-name:var(--font-display)] leading-tight"
                     >
-                      Enter the weekly £30 draw
+                      {videoBlob ? "Share clip & enter £30 draw" : "Enter the weekly £30 draw"}
                     </h2>
                     <p className="text-white/50 text-xs mt-1">
-                      Amazon voucher. Drawn every Monday.{" "}
+                      {videoBlob
+                        ? "Your gameplay clip goes to PlayZone with your entry. Amazon voucher, drawn every Monday."
+                        : "Amazon voucher. Drawn every Monday."}{" "}
                       <Link href="/rules" className="underline hover:text-white/80">
                         Rules
                       </Link>
@@ -223,7 +280,7 @@ export default function EntryModal({
                         onChange={(e) => setAge(e.target.checked)}
                         className="mt-0.5 accent-[var(--accent)]"
                       />
-                      <span>I&apos;m 18 or over and a UK / ROI resident.</span>
+                      <span>I&apos;m 13+ and a UK / ROI resident.</span>
                     </label>
                     <label className="flex items-start gap-2 text-xs text-white/70 leading-snug cursor-pointer">
                       <input
@@ -235,7 +292,7 @@ export default function EntryModal({
                       <span>
                         I agree to the{" "}
                         <Link href="/rules" className="underline hover:text-white">prize draw rules</Link>{" "}
-                        and to PlayZone contacting me by email if I win.
+                        {videoBlob ? "and to PlayZone using my clip on socials & highlights." : "and to PlayZone contacting me by email if I win."}
                       </span>
                     </label>
                   </div>
@@ -251,6 +308,8 @@ export default function EntryModal({
                   >
                     {state === "loading" ? (
                       <span className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin inline-block" />
+                    ) : videoBlob ? (
+                      "Share clip & enter draw"
                     ) : (
                       "Enter the draw"
                     )}
