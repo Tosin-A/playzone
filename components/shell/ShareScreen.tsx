@@ -261,30 +261,42 @@ export default function ShareScreen({
                 {rankLabel}
               </motion.p>
             ) : submitState !== "done" ? (
-              <motion.div
-                key="form"
-                className="flex gap-2 w-full"
-              >
-                <input
-                  ref={inputRef}
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-                  placeholder="Your name"
-                  maxLength={20}
-                  className="flex-1 bg-white/[0.06] border border-white/[0.08] rounded-xl px-3 py-2 text-sm text-white placeholder-white/30 outline-none focus:border-white/20 transition-colors"
-                />
-                <button
-                  onClick={handleSubmit}
-                  disabled={submitState === "loading"}
-                  className="shrink-0 px-4 py-2 bg-accent text-black text-sm font-semibold rounded-xl hover:bg-accent-dim active:scale-[0.97] transition-all disabled:opacity-50"
-                >
-                  {submitState === "loading" ? (
-                    <span className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin inline-block" />
-                  ) : (
-                    "Save"
-                  )}
-                </button>
+              <motion.div key="form" className="flex flex-col gap-1.5 w-full">
+                <div className="flex items-center justify-between">
+                  <span
+                    className="flex items-center gap-1.5 text-[11px] font-semibold text-accent uppercase"
+                    style={{ letterSpacing: "0.14em" }}
+                  >
+                    <span aria-hidden>🏆</span>
+                    Join the leaderboard
+                  </span>
+                  <span className="text-[10px] text-white/40">
+                    Type your name to post your score
+                  </span>
+                </div>
+                <div className="flex gap-2 w-full">
+                  <input
+                    ref={inputRef}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+                    placeholder="Your name"
+                    maxLength={20}
+                    aria-label="Your name for the leaderboard"
+                    className="flex-1 bg-white/[0.06] border border-white/[0.08] rounded-xl px-3 py-2 text-sm text-white placeholder-white/30 outline-none focus:border-accent/60 transition-colors"
+                  />
+                  <button
+                    onClick={handleSubmit}
+                    disabled={submitState === "loading"}
+                    className="shrink-0 px-4 py-2 bg-accent text-black text-sm font-semibold rounded-xl hover:bg-accent-dim active:scale-[0.97] transition-all disabled:opacity-50"
+                  >
+                    {submitState === "loading" ? (
+                      <span className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin inline-block" />
+                    ) : (
+                      "Add me"
+                    )}
+                  </button>
+                </div>
               </motion.div>
             ) : null}
           </AnimatePresence>
